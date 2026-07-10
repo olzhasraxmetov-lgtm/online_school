@@ -5,7 +5,7 @@ from app.application.exceptions import (
     ApplicationError,
     CourseNotFoundError
 )
-from app.domain.execptions import DomainError
+from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
 
 

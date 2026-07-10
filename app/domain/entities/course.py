@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from app.domain.execptions import InvalidCourseError
+from app.domain.exceptions import InvalidCourseError
+
 
 @dataclass(slots=True)
 class Course:
