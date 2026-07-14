@@ -10,7 +10,7 @@ from app.domain.entities.lecture import Lecture
 class GetLectureQuery:
     lecture_id: UUID
 
-class GetLecturesUseCase:
+class GetLectureUseCase:
     def __init__(self, lecture_repository: LectureRepository) -> None:
         self.lecture_repository = lecture_repository
 
