@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 
 from fastapi import Depends
 
+from app.application.use_cases.courses.get_course import GetCourseUseCase
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase
@@ -16,6 +17,11 @@ def get_get_courses_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetCoursesUseCase:
     return GetCoursesUseCase(course_repository=uow.courses)
+
+def get_get_course_use_case(
+    uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetCourseUseCase:
+    return GetCourseUseCase(course_repository=uow.courses)
 
 def get_get_course_structure_use_case(
     uow: SqlAlchemyUnitOfWork = Depends(get_uow),
