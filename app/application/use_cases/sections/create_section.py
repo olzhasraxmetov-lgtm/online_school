@@ -17,7 +17,7 @@ class CreateSectionUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
 
-    async def create(self, command: CreateSectionCommand) -> Section:
+    async def execute(self, command: CreateSectionCommand) -> Section:
         async with self.uow:
             module = await self.uow.modules.get_by_id(command.module_id)
             if module is None:
