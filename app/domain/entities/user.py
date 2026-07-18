@@ -11,7 +11,7 @@ class UserRole(StrEnum):
     ADMIN = "admin"
 
 @dataclass(slots=True)
-class Section:
+class User:
     id: UUID
     email: str
     hashed_password: str

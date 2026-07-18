@@ -3,6 +3,7 @@ from functools import lru_cache
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class ApiSettings(BaseModel):
     title: str
     debug: bool
@@ -13,7 +14,7 @@ class DatabaseSettings(BaseModel):
     echo: bool
 
 class Settings(BaseSettings):
-    model_cache = SettingsConfigDict(
+    model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore"
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
         default='sqlite+aiosqlite:///./fastapi_education.db',
         validation_alias="DATABASE_URL"
     )
-    database_echo: bool = Field(default=Field, validation_alias="DATABASE_ECHO")
+    database_echo: bool = Field(default=False, validation_alias="DATABASE_ECHO")
 
     @property
     def api(self) -> ApiSettings:
