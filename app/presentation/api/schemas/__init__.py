@@ -1,10 +1,28 @@
-from app.presentation.api.schemas.content.course import CourseListItemResponse
-from app.presentation.api.schemas.content.course import CourseResponse
-from app.presentation.api.schemas.content.course import CourseStructureResponse
-from app.presentation.api.schemas.content.lecture import LectureResponse
-from app.presentation.api.schemas.content.lecture import LectureStructureResponse
-from app.presentation.api.schemas.content.module import ModuleStructureResponse
-from app.presentation.api.schemas.content.section import SectionStructureResponse
+from app.presentation.api.schemas.content.course import (
+    CourseListItemResponse,
+    CourseStructureResponse,
+    CourseResponse,
+    UpdateCourseRequest,
+    CreateCourseRequest
+)
+from app.presentation.api.schemas.content.lecture import (
+    LectureResponse,
+    LectureStructureResponse,
+    UpdateLectureRequest,
+    CreateLectureRequest
+)
+from app.presentation.api.schemas.content.module import (
+    ModuleStructureResponse,
+    UpdateModuleRequest,
+    CreateModuleRequest,
+    ModuleResponse
+)
+from app.presentation.api.schemas.content.section import (
+    SectionStructureResponse,
+    UpdateSectionRequest,
+    CreateSectionRequest,
+    SectionResponse,
+)
 from app.presentation.api.schemas.errors import ErrorResponse
 
 __all__ = [
@@ -15,5 +33,15 @@ __all__ = [
     "LectureStructureResponse",
     "ModuleStructureResponse",
     "SectionStructureResponse",
+    "CreateCourseRequest",
+    "UpdateCourseRequest",
+    "CreateModuleRequest",
+    "UpdateModuleRequest",
+    "ModuleResponse",
+    "CreateSectionRequest",
+    "UpdateSectionRequest",
+    "SectionResponse",
+    "CreateLectureRequest",
+    "UpdateLectureRequest",
     "ErrorResponse",
 ]
