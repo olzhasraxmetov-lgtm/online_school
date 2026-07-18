@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LectureBaseResponse(BaseModel):
@@ -15,4 +15,17 @@ class LectureResponse(LectureBaseResponse):
    section_id: UUID
 
 class LectureStructureResponse(LectureBaseResponse):
+    pass
+
+class LectureWriteRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    content: str = Field(min_length=1)
+    position: int = Field(ge=1)
+
+
+class CreateLectureRequest(LectureWriteRequest):
+    pass
+
+
+class UpdateLectureRequest(LectureWriteRequest):
     pass
