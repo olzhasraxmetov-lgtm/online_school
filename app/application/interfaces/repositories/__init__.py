@@ -7,6 +7,6 @@ __all__ = [
     "LectureRepository",
     "SectionRepository",
     "ModuleRepository",
-    "SectionRepository",
+    "CourseRepository",
 ]
 
