@@ -11,6 +11,22 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.api.title,
         debug=settings.api.debug,
+        description=(
+            "Online school API built with clean architecture."
+            "As the first stage, the API supports public content reading "
+            "and administrative management of courses, modules, lectures and sections."
+        ),
+        version="1.0.0",
+        openapi_tags=[
+            {
+                "name": "Content",
+                "description": "Public endpoints for reading courses, course structure and lectures",
+            },
+            {
+                "name": "Admin",
+                "description": "Administration endpoints for creating and updating content",
+            }
+        ]
     )
     register_exception_handlers(app)
     app.include_router(api_router)
