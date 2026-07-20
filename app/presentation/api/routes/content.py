@@ -10,7 +10,7 @@ from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
 )
 from app.presentation.api.schemas import (
-    CourseListItemResponse,
+    CourseListItemResponse, ErrorResponse,
 )
 from app.presentation.api.schemas.content.course import CourseResponse, CourseStructureResponse
 from app.presentation.api.schemas.content.lecture import LectureResponse
@@ -20,6 +20,8 @@ router = APIRouter(tags=["Content"])
 @router.get(
     "/courses",
     response_model=list[CourseListItemResponse],
+    summary="List of available courses",
+    description="Returns a public list of available courses.",
 )
 async def get_courses(
         use_case: GetCoursesUseCase = Depends(get_get_courses_use_case),
@@ -30,6 +32,14 @@ async def get_courses(
 @router.get(
     "/courses/{course_id}",
     response_model=CourseResponse,
+    summary="Get course by id",
+    description="Returns a course by id.",
+    responses={
+        404: {
+            "description": "Course not found",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def get_course(
         course_id: UUID,
@@ -41,6 +51,17 @@ async def get_course(
 @router.get(
     "/courses/{course_id}/structure}",
     response_model=CourseStructureResponse,
+    summary="Get course structure",
+    description=(
+            "Returns the course navigation tree: modules, sections and lectures "
+            "without full lecture content."
+    ),
+    responses={
+        404: {
+            "description": "Course was not found",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def get_courses(
         course_id: UUID,
@@ -52,6 +73,14 @@ async def get_courses(
 @router.get(
     "/lectures/{lecture_id}",
     response_model=LectureResponse,
+    summary="Get lecture by id",
+    description="Returns a lecture by id.",
+    responses={
+        404: {
+            "description": "Lecture was not found.",
+            "model": ErrorResponse,
+        },
+    },
 )
 async def get_lecture(
         lecture_id: UUID,
