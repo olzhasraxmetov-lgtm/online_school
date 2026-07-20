@@ -14,6 +14,7 @@ from app.application.use_cases.sections.update_section import UpdateSectionComma
 from app.presentation.api.dependencies import get_update_module_use_case, get_create_module_use_case, \
     get_update_section_use_case, get_create_section_use_case, get_update_lecture_use_case, get_create_lecture_use_case, \
     get_update_course_use_case, get_create_course_use_case
+from app.presentation.api.schemas import ErrorResponse
 from app.presentation.api.schemas.content.course import CourseResponse, CreateCourseRequest, UpdateCourseRequest
 from app.presentation.api.schemas.content.lecture import LectureResponse, UpdateLectureRequest, CreateLectureRequest
 from app.presentation.api.schemas.content.module import UpdateModuleRequest, ModuleResponse, CreateModuleRequest
@@ -25,6 +26,14 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
     "/courses",
     response_model=CourseResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create a course",
+    description="Create a new course in the administrative API",
+    responses={
+        400: {
+            "description": "Domain or Application validation error",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def create_course(
         request: CreateCourseRequest,
@@ -38,6 +47,21 @@ async def create_course(
 @router.put(
     "/courses/{course_id}",
     response_model=CourseResponse,
+    summary="Update a course",
+    description=(
+            "Update a course in the administrative API. "
+            "Allow changing the course title and description."
+    ),
+    responses={
+        400: {
+            "description": "Domain or Application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Course not found.",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def update_course(
         course_id: UUID,
@@ -57,6 +81,18 @@ async def update_course(
     "/courses/{course_id}/modules",
     response_model=ModuleResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create a module ",
+    description="Create a new module inside an existing course",
+    responses={
+        400: {
+            "description": "Domain or Application validation error",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Course not found.",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def create_module(
     course_id: UUID,
@@ -77,6 +113,21 @@ async def create_module(
 @router.put(
     "/modules/{module_id}",
     response_model=ModuleResponse,
+    summary="Update a module",
+    description=(
+            "Update a module in the administrative API by its ID. "
+            "Allow changing the module title, position and description."
+    ),
+    responses={
+        400: {
+            "description": "Domain or Application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Module not found.",
+            "model": ErrorResponse,
+        }
+    }
 )
 async def update_module(
     module_id: UUID,
@@ -97,6 +148,20 @@ async def update_module(
     "/modules/{module_id}/sections",
     response_model=SectionResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create a section",
+    description=(
+            "Creates a new section inside an existing module."
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Module not found.",
+            "model": ErrorResponse,
+        },
+    },
 )
 async def create_section(
     module_id: UUID,
@@ -117,6 +182,21 @@ async def create_section(
 @router.put(
     "/sections/{section_id}",
     response_model=SectionResponse,
+    summary="Update section",
+    description=(
+            "Updates an existing section by its identifier. "
+            "Allows changing the section title, description and position."
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Section not found.",
+            "model": ErrorResponse,
+        },
+    },
 )
 async def update_section(
     section_id: UUID,
@@ -137,6 +217,19 @@ async def update_section(
     "/sections/{section_id}/lectures",
     response_model=LectureResponse,
     status_code=status.HTTP_201_CREATED,
+    description=(
+            "Creates a new lecture inside an existing section. "
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Section not found.",
+            "model": ErrorResponse,
+        },
+    },
 )
 async def create_lecture(
     section_id: UUID,
@@ -157,6 +250,20 @@ async def create_lecture(
 @router.put(
     "/lectures/{lecture_id}",
     response_model=LectureResponse,
+    description=(
+            "Updates an existing lecture by its identifier. "
+            "Allows changing the lecture title, content and position."
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Lecture not found.",
+            "model": ErrorResponse,
+        },
+    },
 )
 async def update_lecture(
     lecture_id: UUID,
