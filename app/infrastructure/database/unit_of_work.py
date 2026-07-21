@@ -6,6 +6,7 @@ from app.infrastructure.database.repositories import (
     SqlAlchemyLectureRepository,
     SqlAlchemyModuleRepository,
     SqlAlchemySectionRepository,
+    SqlAlchemyUserRepository,
 )
 
 
@@ -29,6 +30,7 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
         self.modules = SqlAlchemyModuleRepository(session=self.session)
         self.sections = SqlAlchemySectionRepository(session=self.session)
         self.lectures = SqlAlchemyLectureRepository(session=self.session)
+        self.users = SqlAlchemyUserRepository(session=self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
