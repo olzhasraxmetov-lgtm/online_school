@@ -15,6 +15,7 @@ from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
 from app.application.use_cases.sections.create_section import CreateSectionUseCase
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
+from app.application.use_cases.users.auth_login import LoginUserUseCase
 from app.application.use_cases.users.register_user import RegisterUserUseCase
 from app.infrastructure.database import SessionFactory, SqlAlchemyUnitOfWork
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -94,6 +95,12 @@ def get_password_hasher() -> PasswordHasher:
 
 def get_register_user_use_case() -> RegisterUserUseCase:
     return RegisterUserUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+        password_hasher=get_password_hasher(),
+    )
+
+def get_login_user_use_case() -> LoginUserUseCase:
+    return LoginUserUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
         password_hasher=get_password_hasher(),
     )
