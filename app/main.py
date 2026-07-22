@@ -25,6 +25,10 @@ def create_app() -> FastAPI:
             {
                 "name": "Admin",
                 "description": "Administration endpoints for creating and updating content",
+            },
+            {
+                "name": "Auth",
+                "description": "Endpoints for user registration and login with JWT token issuing.",
             }
         ]
     )

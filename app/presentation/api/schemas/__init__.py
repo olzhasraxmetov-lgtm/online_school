@@ -1,3 +1,9 @@
+from app.presentation.api.schemas.auth import (
+    RegisterUserRequest,
+    RegisteredUserResponse,
+    LoginRequest,
+    TokenResponse
+)
 from app.presentation.api.schemas.content.course import (
     CourseListItemResponse,
     CourseStructureResponse,
