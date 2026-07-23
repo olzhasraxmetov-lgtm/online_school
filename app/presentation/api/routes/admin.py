@@ -13,14 +13,28 @@ from app.application.use_cases.sections.create_section import CreateSectionUseCa
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
 from app.presentation.api.dependencies import get_update_module_use_case, get_create_module_use_case, \
     get_update_section_use_case, get_create_section_use_case, get_update_lecture_use_case, get_create_lecture_use_case, \
-    get_update_course_use_case, get_create_course_use_case
+    get_update_course_use_case, get_create_course_use_case, get_current_admin
 from app.presentation.api.schemas import ErrorResponse
 from app.presentation.api.schemas.content.course import CourseResponse, CreateCourseRequest, UpdateCourseRequest
 from app.presentation.api.schemas.content.lecture import LectureResponse, UpdateLectureRequest, CreateLectureRequest
 from app.presentation.api.schemas.content.module import UpdateModuleRequest, ModuleResponse, CreateModuleRequest
 from app.presentation.api.schemas.content.section import SectionResponse, CreateSectionRequest, UpdateSectionRequest
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+router = APIRouter(
+    prefix="/admin",
+    tags=["Admin"],
+    dependencies=[Depends(get_current_admin)],
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'Admin access is required.',
+            'model': ErrorResponse,
+        },
+    }
+)
 
 @router.post(
     "/courses",
