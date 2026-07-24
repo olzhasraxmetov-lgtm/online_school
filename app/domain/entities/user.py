@@ -38,6 +38,9 @@ class User:
     def can_manage_platform(self) -> bool:
         return self.is_admin()
 
+    def can_take_learning_activities(self) -> bool:
+        return self.is_student()
+
     def can_manage_learning_content(self) -> bool:
         return self.role in {UserRole.AUTHOR, UserRole.ADMIN}
 
