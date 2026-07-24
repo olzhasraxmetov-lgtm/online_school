@@ -49,7 +49,7 @@ async def get_course(
     return CourseResponse.model_validate(result)
 
 @router.get(
-    "/courses/{course_id}/structure}",
+    "/courses/{course_id}/structure",
     response_model=CourseStructureResponse,
     summary="Get course structure",
     description=(
