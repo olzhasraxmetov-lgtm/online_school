@@ -18,7 +18,7 @@ class SqlAlchemyCourseRepository(CourseRepository):
         stmt = (
             select(CourseModel)
             .options(selectinload(CourseModel.modules))
-            .where(CourseModel.id == course_id)
+            .where(CourseModel.id == str(course_id))
         )
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
