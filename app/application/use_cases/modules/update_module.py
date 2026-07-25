@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.application.exceptions import ModuleNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.domain.entities import Module
 
@@ -19,6 +20,8 @@ class UpdateModuleUseCase:
     async def execute(self, command: UpdateModuleCommand) -> Module:
         async with self.uow:
             module = await self.uow.modules.get_by_id(command.module_id)
+            if module is None:
+                raise ModuleNotFoundError("Module not found")
             module.update(
                 title=command.title,
                 description=command.description,
