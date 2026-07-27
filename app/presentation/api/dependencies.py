@@ -12,6 +12,7 @@ from app.application.use_cases.courses.get_course_structure import GetCourseStru
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase
 from app.application.use_cases.lectures.create_lecture import CreateLectureUseCase
+from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase
 from app.application.use_cases.lectures.update_lecture import UpdateLectureUseCase
 from app.application.use_cases.modules.create_module import CreateModuleUseCase
@@ -110,6 +111,11 @@ def get_delete_module_use_case() -> DeleteModuleUseCase:
 
 def get_delete_section_use_case() -> DeleteSectionUseCase:
     return DeleteSectionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_lecture_use_case() -> DeleteLectureUseCase:
+    return DeleteLectureUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
