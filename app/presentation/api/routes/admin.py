@@ -129,7 +129,7 @@ async def update_course(
     summary="Delete course",
     description=(
         "Deletes an existing course by its identifier. "
-        "If we delete a course, we delete all orphan elements such as:"
+        "If we delete a course, we delete all child elements such as:  "
         "modules, sections, lectures"
     ),
     responses={
@@ -223,7 +223,7 @@ async def update_module(
     summary="Delete module",
     description=(
         "Deletes an existing module by its identifier. "
-        "If we delete a module, we delete all orphan elements such as:"
+        "If we delete a module, we delete all child elements such as: "
         "sections, lectures"
     ),
     responses={
