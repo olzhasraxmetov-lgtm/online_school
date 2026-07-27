@@ -5,7 +5,7 @@ from app.application.exceptions import (
     ApplicationError,
     CourseNotFoundError,
     ModuleNotFoundError,
-    SectionNotFoundError,
+    SectionNotFoundError, LectureNotFoundError,
 )
 from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
@@ -80,4 +80,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(PermissionDeniedError, permission_denied_handler)
     app.add_exception_handler(CourseNotFoundError, course_not_found_handler)
     app.add_exception_handler(ModuleNotFoundError, module_not_found_handler)
-    app.add_exception_handler(SectionNotFoundError, lecture_not_found_handler)
+    app.add_exception_handler(SectionNotFoundError, section_not_found_handler)
+    app.add_exception_handler(LectureNotFoundError, lecture_not_found_handler)
