@@ -20,3 +20,7 @@ class SectionRepository(ABC):
     @abstractmethod
     async def get_by_id(self, section_id: UUID) -> Section | None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def remove(self, section_id: UUID) -> None:
+        raise NotImplementedError
