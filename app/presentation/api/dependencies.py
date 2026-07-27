@@ -18,6 +18,7 @@ from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
 from app.application.use_cases.sections.create_section import CreateSectionUseCase
+from app.application.use_cases.sections.delete_section import DeleteSectionUseCase
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
 from app.application.use_cases.users.auth_login import LoginUserUseCase
 from app.application.use_cases.users.register_user import RegisterUserUseCase
@@ -104,6 +105,11 @@ def get_delete_course_use_case() -> DeleteCourseUseCase:
 
 def get_delete_module_use_case() -> DeleteModuleUseCase:
     return DeleteModuleUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_section_use_case() -> DeleteSectionUseCase:
+    return DeleteSectionUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
