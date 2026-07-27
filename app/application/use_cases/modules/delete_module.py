@@ -16,11 +16,11 @@ class DeleteModuleUseCase:
     async def execute(self, command: DeleteModuleCommand) -> None:
         async with self.uow:
             module = await self.uow.modules.get_by_id(command.module_id)
-            if not module:
+            if module is None:
                 raise ModuleNotFoundError("Module not found")
 
             course = await self.uow.courses.get_by_id(module.course_id)
-            if not course:
+            if course is None:
                 raise CourseNotFoundError("Course not found")
 
             course.remove_module(module.id)

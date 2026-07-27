@@ -16,11 +16,11 @@ class DeleteLectureUseCase:
     async def execute(self, command: DeleteLectureCommand) -> None:
         async with self.uow:
             lecture = await self.uow.lectures.get_by_id(command.lecture_id)
-            if not lecture:
+            if lecture is None:
                 raise LectureNotFoundError("Lecture not found")
 
             section = await self.uow.sections.get_by_id(lecture.section_id)
-            if not section:
+            if section is None:
                 raise SectionNotFoundError("Section not found")
 
             section.remove_lecture(lecture.id)
