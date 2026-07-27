@@ -15,15 +15,42 @@ from app.application.use_cases.modules.update_module import UpdateModuleUseCase,
 from app.application.use_cases.sections.create_section import CreateSectionUseCase, CreateSectionCommand
 from app.application.use_cases.sections.delete_section import DeleteSectionUseCase, DeleteSectionCommand
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
-from app.presentation.api.dependencies import get_update_module_use_case, get_create_module_use_case, \
-    get_update_section_use_case, get_create_section_use_case, get_update_lecture_use_case, get_create_lecture_use_case, \
-    get_update_course_use_case, get_create_course_use_case, get_current_admin, get_delete_course_use_case, \
-    get_delete_module_use_case, get_delete_section_use_case, get_delete_lecture_use_case
+from app.presentation.api.dependencies import (
+    get_update_module_use_case,
+    get_create_module_use_case,
+    get_update_section_use_case,
+    get_create_section_use_case,
+    get_update_lecture_use_case,
+    get_create_lecture_use_case,
+    get_update_course_use_case,
+    get_create_course_use_case,
+    get_delete_course_use_case,
+    get_delete_module_use_case,
+    get_delete_section_use_case,
+    get_current_admin,
+    get_delete_lecture_use_case
+)
 from app.presentation.api.schemas import ErrorResponse
-from app.presentation.api.schemas.content.course import CourseResponse, CreateCourseRequest, UpdateCourseRequest
-from app.presentation.api.schemas.content.lecture import LectureResponse, UpdateLectureRequest, CreateLectureRequest
-from app.presentation.api.schemas.content.module import UpdateModuleRequest, ModuleResponse, CreateModuleRequest
-from app.presentation.api.schemas.content.section import SectionResponse, CreateSectionRequest, UpdateSectionRequest
+from app.presentation.api.schemas.content.course import (
+    CourseResponse,
+    CreateCourseRequest,
+    UpdateCourseRequest
+)
+from app.presentation.api.schemas.content.lecture import (
+    LectureResponse,
+    UpdateLectureRequest,
+    CreateLectureRequest
+)
+from app.presentation.api.schemas.content.module import (
+    UpdateModuleRequest,
+    ModuleResponse,
+    CreateModuleRequest
+)
+from app.presentation.api.schemas.content.section import (
+    SectionResponse,
+    CreateSectionRequest,
+    UpdateSectionRequest
+)
 
 router = APIRouter(
     prefix="/admin",
@@ -45,7 +72,7 @@ router = APIRouter(
     "/courses",
     response_model=CourseResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a course",
+    summary="Create course",
     description="Create a new course in the administrative API",
     responses={
         400: {
@@ -66,7 +93,7 @@ async def create_course(
 @router.put(
     "/courses/{course_id}",
     response_model=CourseResponse,
-    summary="Update a course",
+    summary="Update course",
     description=(
             "Update a course in the administrative API. "
             "Allow changing the course title and description."
@@ -96,11 +123,37 @@ async def update_course(
     )
     return CourseResponse.model_validate(result)
 
+@router.delete(
+    '/courses/{course_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete course",
+    description=(
+        "Deletes an existing course by its identifier. "
+        "If we delete a course, we delete all orphan elements such as:"
+        "modules, sections, lectures"
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Course not found.",
+            "model": ErrorResponse,
+        }
+    }
+)
+async def delete_course(
+        course_id: UUID,
+        use_case: DeleteCourseUseCase = Depends(get_delete_course_use_case)
+):
+    await use_case.execute(DeleteCourseCommand(course_id=course_id))
+
 @router.post(
     "/courses/{course_id}/modules",
     response_model=ModuleResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a module ",
+    summary="Create module ",
     description="Create a new module inside an existing course",
     responses={
         400: {
@@ -132,7 +185,7 @@ async def create_module(
 @router.put(
     "/modules/{module_id}",
     response_model=ModuleResponse,
-    summary="Update a module",
+    summary="Update module",
     description=(
             "Update a module in the administrative API by its ID. "
             "Allow changing the module title, position and description."
@@ -163,11 +216,38 @@ async def update_module(
     )
     return ModuleResponse.model_validate(result)
 
+
+@router.delete(
+    '/modules/{module_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete module",
+    description=(
+        "Deletes an existing module by its identifier. "
+        "If we delete a module, we delete all orphan elements such as:"
+        "sections, lectures"
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Module not found.",
+            "model": ErrorResponse,
+        }
+    }
+)
+async def delete_module(
+        module_id: UUID,
+        use_case: DeleteModuleUseCase = Depends(get_delete_module_use_case)
+):
+    await use_case.execute(DeleteModuleCommand(module_id=module_id))
+
 @router.post(
     "/modules/{module_id}/sections",
     response_model=SectionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a section",
+    summary="Create section",
     description=(
             "Creates a new section inside an existing module."
     ),
@@ -232,9 +312,36 @@ async def update_section(
     )
     return SectionResponse.model_validate(result)
 
+
+@router.delete(
+    '/sections/{section_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete section",
+    description=(
+        "Deletes an existing section by its identifier. "
+        "If we delete a section, we delete lectures that are attached to it.:"
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Section not found.",
+            "model": ErrorResponse,
+        }
+    }
+)
+async def delete_section(
+        section_id: UUID,
+        use_case: DeleteSectionUseCase = Depends(get_delete_section_use_case)
+):
+    await use_case.execute(DeleteSectionCommand(section_id=section_id))
+
 @router.post(
     "/sections/{section_id}/lectures",
     response_model=LectureResponse,
+    summary="Create lecture",
     status_code=status.HTTP_201_CREATED,
     description=(
             "Creates a new lecture inside an existing section. "
@@ -269,6 +376,7 @@ async def create_lecture(
 @router.put(
     "/lectures/{lecture_id}",
     response_model=LectureResponse,
+    summary="Update lecture",
     description=(
             "Updates an existing lecture by its identifier. "
             "Allows changing the lecture title, content and position."
@@ -301,82 +409,9 @@ async def update_lecture(
 
 
 @router.delete(
-    '/courses/{course_id}',
-    status_code=status.HTTP_204_NO_CONTENT,
-    description=(
-        "Deletes an existing course by its identifier. "
-        "If we delete a course, we delete all orphan elements such as:"
-        "modules, sections, lectures"
-    ),
-    responses={
-        400: {
-            "description": "Domain or application validation error.",
-            "model": ErrorResponse,
-        },
-        404: {
-            "description": "Course not found.",
-            "model": ErrorResponse,
-        }
-    }
-)
-async def delete_course(
-        course_id: UUID,
-        use_case: DeleteCourseUseCase = Depends(get_delete_course_use_case)
-):
-    await use_case.execute(DeleteCourseCommand(course_id=course_id))
-
-@router.delete(
-    '/modules/{module_id}',
-    status_code=status.HTTP_204_NO_CONTENT,
-    description=(
-        "Deletes an existing module by its identifier. "
-        "If we delete a module, we delete all orphan elements such as:"
-        "sections, lectures"
-    ),
-    responses={
-        400: {
-            "description": "Domain or application validation error.",
-            "model": ErrorResponse,
-        },
-        404: {
-            "description": "Module not found.",
-            "model": ErrorResponse,
-        }
-    }
-)
-async def delete_module(
-        module_id: UUID,
-        use_case: DeleteModuleUseCase = Depends(get_delete_module_use_case)
-):
-    await use_case.execute(DeleteModuleCommand(module_id=module_id))
-
-@router.delete(
-    '/sections/{section_id}',
-    status_code=status.HTTP_204_NO_CONTENT,
-    description=(
-        "Deletes an existing section by its identifier. "
-        "If we delete a section, we delete lectures that are attached to it.:"
-    ),
-    responses={
-        400: {
-            "description": "Domain or application validation error.",
-            "model": ErrorResponse,
-        },
-        404: {
-            "description": "Section not found.",
-            "model": ErrorResponse,
-        }
-    }
-)
-async def delete_section(
-        section_id: UUID,
-        use_case: DeleteSectionUseCase = Depends(get_delete_section_use_case)
-):
-    await use_case.execute(DeleteSectionCommand(section_id=section_id))
-
-@router.delete(
     '/lectures/{lecture_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete lecture",
     description=(
         "Deletes an existing lecture by its identifier. "
     ),
