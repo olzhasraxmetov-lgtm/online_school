@@ -9,12 +9,14 @@ from app.application.use_cases.courses.update_course import UpdateCourseUseCase,
 from app.application.use_cases.lectures.create_lecture import CreateLectureCommand, CreateLectureUseCase
 from app.application.use_cases.lectures.update_lecture import UpdateLectureCommand, UpdateLectureUseCase
 from app.application.use_cases.modules.create_module import CreateModuleCommand, CreateModuleUseCase
+from app.application.use_cases.modules.delete_module import DeleteModuleUseCase, DeleteModuleCommand
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase, UpdateModuleCommand
 from app.application.use_cases.sections.create_section import CreateSectionUseCase, CreateSectionCommand
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
 from app.presentation.api.dependencies import get_update_module_use_case, get_create_module_use_case, \
     get_update_section_use_case, get_create_section_use_case, get_update_lecture_use_case, get_create_lecture_use_case, \
-    get_update_course_use_case, get_create_course_use_case, get_current_admin, get_delete_course_use_case
+    get_update_course_use_case, get_create_course_use_case, get_current_admin, get_delete_course_use_case, \
+    get_delete_module_use_case
 from app.presentation.api.schemas import ErrorResponse
 from app.presentation.api.schemas.content.course import CourseResponse, CreateCourseRequest, UpdateCourseRequest
 from app.presentation.api.schemas.content.lecture import LectureResponse, UpdateLectureRequest, CreateLectureRequest
@@ -301,6 +303,8 @@ async def update_lecture(
     status_code=status.HTTP_204_NO_CONTENT,
     description=(
         "Deletes an existing course by its identifier. "
+        "If we delete a course, we delete all orphan elements such as:"
+        "modules, sections, lectures"
     ),
     responses={
         400: {
@@ -318,3 +322,28 @@ async def delete_course(
         use_case: DeleteCourseUseCase = Depends(get_delete_course_use_case)
 ):
     await use_case.execute(DeleteCourseCommand(course_id=course_id))
+
+@router.delete(
+    '/modules/{module_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    description=(
+        "Deletes an existing module by its identifier. "
+        "If we delete a module, we delete all orphan elements such as:"
+        "sections, lectures"
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Module not found.",
+            "model": ErrorResponse,
+        }
+    }
+)
+async def delete_module(
+        module_id: UUID,
+        use_case: DeleteModuleUseCase = Depends(get_delete_module_use_case)
+):
+    await use_case.execute(DeleteModuleCommand(module_id=module_id))
