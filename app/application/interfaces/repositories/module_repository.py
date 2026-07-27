@@ -20,3 +20,7 @@ class ModuleRepository(ABC):
     @abstractmethod
     async def get_by_id(self, module_id:  UUID) -> Module | None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def remove(self, module_id: UUID) -> None:
+        raise NotImplementedError
