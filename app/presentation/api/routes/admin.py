@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.application.use_cases.courses.create_course import CreateCourseUseCase, CreateCourseCommand
+from app.application.use_cases.courses.delete_course import DeleteCourseUseCase, DeleteCourseCommand
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase, UpdateCourseCommand
 from app.application.use_cases.lectures.create_lecture import CreateLectureCommand, CreateLectureUseCase
 from app.application.use_cases.lectures.update_lecture import UpdateLectureCommand, UpdateLectureUseCase
@@ -13,7 +14,7 @@ from app.application.use_cases.sections.create_section import CreateSectionUseCa
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
 from app.presentation.api.dependencies import get_update_module_use_case, get_create_module_use_case, \
     get_update_section_use_case, get_create_section_use_case, get_update_lecture_use_case, get_create_lecture_use_case, \
-    get_update_course_use_case, get_create_course_use_case, get_current_admin
+    get_update_course_use_case, get_create_course_use_case, get_current_admin, get_delete_course_use_case
 from app.presentation.api.schemas import ErrorResponse
 from app.presentation.api.schemas.content.course import CourseResponse, CreateCourseRequest, UpdateCourseRequest
 from app.presentation.api.schemas.content.lecture import LectureResponse, UpdateLectureRequest, CreateLectureRequest
@@ -293,3 +294,27 @@ async def update_lecture(
         )
     )
     return LectureResponse.model_validate(result)
+
+
+@router.delete(
+    '/courses/{course_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    description=(
+        "Deletes an existing course by its identifier. "
+    ),
+    responses={
+        400: {
+            "description": "Domain or application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Course not found.",
+            "model": ErrorResponse,
+        }
+    }
+)
+async def delete_course(
+        course_id: UUID,
+        use_case: DeleteCourseUseCase = Depends(get_delete_course_use_case)
+):
+    await use_case.execute(DeleteCourseCommand(course_id=course_id))
