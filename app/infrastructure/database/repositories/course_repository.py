@@ -46,3 +46,4 @@ class SqlAlchemyCourseRepository(CourseRepository):
         if model is None:
             return
         await self.session.delete(model)
+        await self.session.flush()
