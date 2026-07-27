@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
+from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
 from app.application.use_cases.courses.get_course import GetCourseUseCase
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
@@ -92,6 +93,11 @@ def get_create_lecture_use_case() -> CreateLectureUseCase:
 
 def get_update_lecture_use_case() -> UpdateLectureUseCase:
     return UpdateLectureUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_course_use_case() -> DeleteCourseUseCase:
+    return DeleteCourseUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
