@@ -32,6 +32,9 @@ class FakeCourseRepository:
     async def update(self, course) -> None:
         self.items[course.id] = course
 
+    async def remove(self, course_id) -> None:
+        self.items.pop(course_id, None)
+
 class FakeModuleRepository:
     def __init__(self) -> None:
         self.items = {}
@@ -47,6 +50,9 @@ class FakeModuleRepository:
 
     async def update(self, module) -> None:
         self.items[module.id] = module
+
+    async def remove(self, course_id) -> None:
+        self.items.pop(course_id, None)
 
 
 class FakeSectionRepository:
@@ -65,6 +71,9 @@ class FakeSectionRepository:
     async def update(self, section) -> None:
         self.items[section.id] = section
 
+    async def remove(self, course_id) -> None:
+        self.items.pop(course_id, None)
+
 
 class FakeLectureRepository:
     def __init__(self) -> None:
@@ -81,6 +90,9 @@ class FakeLectureRepository:
 
     async def update(self, lecture) -> None:
         self.items[lecture.id] = lecture
+
+    async def remove(self, course_id) -> None:
+        self.items.pop(course_id, None)
 
 class FakeUnitOfWork(UnitOfWork):
     def __init__(self) -> None:
@@ -103,7 +115,7 @@ class FakeUnitOfWork(UnitOfWork):
         self.committed = True
 
     async def rollback(self) -> None:
-        self.committed = True
+        self.rolled_back = True
 
 @pytest.mark.asyncio
 async def test_create_course_adds_course_and_commits() -> None:
