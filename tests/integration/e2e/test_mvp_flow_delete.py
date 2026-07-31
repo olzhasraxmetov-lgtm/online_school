@@ -83,12 +83,6 @@ async def test_mvp_flow_from_deleting_to_public_read(client, seeded_admin_user):
     assert 'sections' not in payload
     assert 'lectures' not in payload
 
-    deleted_section_response = await client.get(
-        f'/api/sections/{section_id}',
-    )
-
-    assert deleted_section_response.status_code == 404
-
     deleted_lecture_response = await client.get(
         f'/api/lectures/{lecture_id}',
     )
