@@ -42,7 +42,19 @@ class User:
         return self.is_student()
 
     def can_manage_learning_content(self) -> bool:
-        return self.role in {UserRole.AUTHOR, UserRole.ADMIN}
+        return self.role in {UserRole.ADMIN, UserRole.AUTHOR}
 
     def can_manage_content(self) -> bool:
-        return self.can_manage_platform()
+        return self.can_manage_learning_content()
+
+    def can_manage_course_structure(self) -> bool:
+        return self.role in {UserRole.ADMIN, UserRole.AUTHOR}
+
+    def can_manage_interactive_content(self) -> bool:
+        return self.role in {UserRole.ADMIN, UserRole.AUTHOR}
+
+    def can_view_own_learning_results(self) -> bool:
+        return self.is_student()
+
+    def can_view_all_learning_results(self) -> bool:
+        return self.role in {UserRole.ADMIN, UserRole.AUTHOR}
