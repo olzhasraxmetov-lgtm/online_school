@@ -56,6 +56,7 @@ class GetCourseStructureUseCase:
                     description=section.description,
                     position=section.position,
                     lectures=lecture_dtos,
+                    question_ids=list(section.question_ids),
                 ))
             module_dtos.append(ModuleStructureDTO(
                 id=module.id,
