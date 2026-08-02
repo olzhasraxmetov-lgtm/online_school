@@ -7,7 +7,7 @@ from app.domain.entities.question_attempt import QuestionResultStatus
 from app.domain.exceptions import (
     InvalidQuestionError,
     QuestionAttemptLimitExceededError,
-    InvalidQuestionResultError
+    InvalidQuestionResultError, QuestionAlreadySolvedError
 )
 
 if typing.TYPE_CHECKING:
@@ -79,12 +79,25 @@ class Question:
         self.reward_points = reward_points
         self._validate()
 
-    def can_start_attempt(self, existing_attempts_count: int) -> bool:
+    def can_start_attempt(
+            self,
+            existing_attempts_count: int,
+            has_correct_attempts: bool = False
+    ) -> bool:
+        if has_correct_attempts:
+            return False
         return existing_attempts_count < self.max_attempts
 
-    def ensure_attempt_available(self, existing_attempts_count: int) -> None:
+    def ensure_attempt_available(
+            self,
+            existing_attempts_count: int,
+            has_correct_attempts: bool = False
+    ) -> None:
+        if has_correct_attempts:
+            raise QuestionAlreadySolvedError("Question has already been solved.")
+
         if not self.can_start_attempt(existing_attempts_count):
-            raise QuestionAttemptLimitExceededError("Question attempt limit has been reached.")
+            raise QuestionAttemptLimitExceededError('Question attempt limit exceeded.')
 
     def add_answer_option(self, answer_option_id: UUID) -> None:
         if answer_option_id not in self.answer_option_ids:
