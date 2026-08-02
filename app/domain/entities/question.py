@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Sequence
 from uuid import UUID
 
+from app.domain.entities.question_attempt import QuestionResultStatus
 from app.domain.exceptions import (
     InvalidQuestionError,
     QuestionAttemptLimitExceededError,
@@ -123,3 +124,21 @@ class Question:
 
         correct_option_ids = {option.id for option in answer_options if option.is_correct}
         return selected_ids == correct_option_ids
+
+    def resolve_result_status(
+            self,
+            selected_option_ids: Sequence[UUID],
+            answer_options: Sequence['AnswerOption']
+    ) -> QuestionResultStatus:
+        if self.is_correct_selection(selected_option_ids, answer_options):
+            return QuestionResultStatus.CORRECT
+        return QuestionResultStatus.INCORRECT
+
+    def resolve_awarded_points(
+            self,
+            selected_option_ids: Sequence[UUID],
+            answer_options: Sequence['AnswerOption']
+    ):
+        if self.is_correct_selection(selected_option_ids, answer_options):
+            return self.reward_points
+        return 0
