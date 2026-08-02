@@ -1,4 +1,5 @@
 from app.application.interfaces.repositories.answer_option_repository import AnswerOptionRepository
+from app.application.interfaces.repositories.answer_option_repository import AnswerOptionRepository
 from app.application.interfaces.repositories.course_repository import CourseRepository
 from app.application.interfaces.repositories.lecture_repository import LectureRepository
 from app.application.interfaces.repositories.module_repository import ModuleRepository
@@ -13,5 +14,6 @@ __all__ = [
     "CourseRepository",
     "UserRepository",
     "QuestionRepository",
+    "AnswerOptionRepository",
 ]
 
