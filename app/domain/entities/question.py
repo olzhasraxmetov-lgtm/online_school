@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Sequence
 from uuid import UUID
 
-from app.domain.exceptions import InvalidQuestionError
+from app.domain.exceptions import InvalidQuestionError, QuestionAttemptLimitExceededError
 
 if typing.TYPE_CHECKING:
     from app.domain.entities.answer_option import AnswerOption
@@ -73,6 +73,13 @@ class Question:
         self.max_attempts = max_attempts
         self.reward_points = reward_points
         self._validate()
+
+    def can_start_attempt(self, existing_attempts_count: int) -> bool:
+        return existing_attempts_count < self.max_attempts
+
+    def ensure_attempt_available(self, existing_attempts_count: int) -> None:
+        if not self.can_start_attempt(existing_attempts_count):
+            raise QuestionAttemptLimitExceededError("Question attempt limit has been reached.")
 
     def add_answer_option(self, answer_option_id: UUID) -> None:
         if answer_option_id not in self.answer_option_ids:
