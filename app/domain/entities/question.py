@@ -3,7 +3,11 @@ from dataclasses import dataclass, field
 from typing import Sequence
 from uuid import UUID
 
-from app.domain.exceptions import InvalidQuestionError, QuestionAttemptLimitExceededError
+from app.domain.exceptions import (
+    InvalidQuestionError,
+    QuestionAttemptLimitExceededError,
+    InvalidQuestionResultError
+)
 
 if typing.TYPE_CHECKING:
     from app.domain.entities.answer_option import AnswerOption
@@ -99,3 +103,23 @@ class Question:
 
     def allows_multiple_answers(self) -> bool:
         return self.is_multiple_choice()
+
+    def is_correct_selection(
+            self,
+            selected_option_ids: Sequence[UUID],
+            answer_options: Sequence['AnswerOption']
+    ) -> bool:
+        expected_option_ids = set(self.answer_option_ids)
+        actual_option_ids = {option.id for option in answer_options}
+        selected_ids = set(selected_option_ids)
+
+        if actual_option_ids != expected_option_ids:
+            raise InvalidQuestionResultError(
+                "Answer options do not match question configuration."
+            )
+
+        if not selected_ids.issubset(actual_option_ids):
+            raise InvalidQuestionResultError("Selected options contain unknown ids.")
+
+        correct_option_ids = {option.id for option in answer_options if option.is_correct}
+        return selected_ids == correct_option_ids
