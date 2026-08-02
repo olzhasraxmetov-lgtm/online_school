@@ -30,3 +30,6 @@ class InvalidAnswerOptionError(DomainError):
 
 class InvalidQuestionAttemptError(DomainError):
     pass
+
+class QuestionAttemptLimitExceededError(DomainError):
+    pass
