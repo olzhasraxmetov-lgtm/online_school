@@ -36,3 +36,6 @@ class QuestionAttemptLimitExceededError(DomainError):
 
 class InvalidQuestionResultError(DomainError):
     pass
+
+class QuestionAlreadySolvedError(DomainError):
+    pass
