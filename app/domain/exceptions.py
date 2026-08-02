@@ -27,3 +27,6 @@ class InvalidQuestionError(DomainError):
 
 class InvalidAnswerOptionError(DomainError):
     pass
+
+class InvalidQuestionAttemptError(DomainError):
+    pass
