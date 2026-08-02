@@ -20,3 +20,9 @@ class UserAlreadyExistsError(ApplicationError):
 
 class InvalidCredentialsError(ApplicationError):
     pass
+
+class QuestionNotFoundError(ApplicationError):
+    pass
+
+class PermissionDeniedError(ApplicationError):
+    pass
