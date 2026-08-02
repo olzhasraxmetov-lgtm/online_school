@@ -60,3 +60,23 @@ class QuestionAttempt:
 
     def is_incorrect(self) -> bool:
         return self.result_status is QuestionResultStatus.INCORRECT
+
+    def apply_result(
+            self,
+            result_status: QuestionResultStatus,
+            awarded_points: int
+    ) -> None:
+        if self.has_result():
+            raise InvalidQuestionAttemptError("Question attempt result is already defined.")
+
+        if awarded_points < 0:
+            raise InvalidQuestionAttemptError('Awarded points cannot be negative.')
+
+        if result_status is QuestionResultStatus.INCORRECT and awarded_points != 0:
+            raise InvalidQuestionAttemptError(
+                'Incorrect question attempt cannot have awarded points'
+            )
+
+        self.result_status = result_status
+        self.awarded_points = awarded_points
+        self.checked_at = datetime.now(UTC)
