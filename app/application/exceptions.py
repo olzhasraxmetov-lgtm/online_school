@@ -26,3 +26,6 @@ class QuestionNotFoundError(ApplicationError):
 
 class PermissionDeniedError(ApplicationError):
     pass
+
+class AnswerOptionNotFoundError(ApplicationError):
+    pass
