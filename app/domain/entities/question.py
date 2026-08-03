@@ -72,11 +72,13 @@ class Question:
             position: int,
             max_attempts: int,
             reward_points: int,
+            question_type: QuestionType
     ) -> None:
         self.text = text
         self.position = position
         self.max_attempts = max_attempts
         self.reward_points = reward_points
+        self.question_type = question_type
         self._validate()
 
     def can_start_attempt(
