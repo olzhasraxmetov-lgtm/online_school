@@ -29,3 +29,6 @@ class PermissionDeniedError(ApplicationError):
 
 class AnswerOptionNotFoundError(ApplicationError):
     pass
+
+class QuestionAlreadyUsedError(ApplicationError):
+    pass
