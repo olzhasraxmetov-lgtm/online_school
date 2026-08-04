@@ -2,11 +2,13 @@ from dataclasses import dataclass
 from uuid import uuid4
 
 from app.application.interfaces.unit_of_work import UnitOfWork
+from app.domain.entities import User
 from app.domain.entities.course import Course
 
 
 @dataclass(slots=True)
 class CreateCourseCommand:
+    actor: User
     title: str
     description: str
 
@@ -21,6 +23,7 @@ class CreateCourseUseCase:
                 id=uuid4(),
                 title=command.title,
                 description=command.description,
+                author_id=command.actor.id,
             )
             await self.uow.courses.add(course)
             await self.uow.commit()
