@@ -18,6 +18,8 @@ class CreateCourseUseCase:
         self.uow = uow
 
     async def execute(self, command: CreateCourseCommand) -> Course:
+        if not command.actor.can_manage_learning_content():
+            raise PermissionError("User cannot create courses.")
         async with self.uow:
             course = Course(
                 id=uuid4(),
