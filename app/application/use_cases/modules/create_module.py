@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from app.application.exceptions import CourseNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
-from app.domain.entities import Module
+from app.application.services.course_access_service import CourseAccessService
+from app.domain.entities import Module, User
 
 
 @dataclass(slots=True)
 class CreateModuleCommand:
+    actor: User
     course_id: UUID
     title: str
     description: str
@@ -16,12 +17,14 @@ class CreateModuleCommand:
 class CreateModuleUseCase:
     def __init__(self, uow:UnitOfWork ) -> None:
         self.uow = uow
+        self.course_access_service = CourseAccessService(uow)
 
     async def execute(self, command: CreateModuleCommand) -> Module:
         async with self.uow:
-            course = await self.uow.courses.get_by_id(command.course_id)
-            if course is None:
-                raise CourseNotFoundError("Course not found")
+            course = await self.course_access_service.ensure_can_manage_course(
+                course_id=command.course_id,
+                actor=command.actor
+            )
 
             module = Module(
                 id=uuid4(),
