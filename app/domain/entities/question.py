@@ -84,9 +84,9 @@ class Question:
     def can_start_attempt(
             self,
             existing_attempts_count: int,
-            has_correct_attempts: bool = False
+            has_correct_attempt: bool = False
     ) -> bool:
-        if has_correct_attempts:
+        if has_correct_attempt:
             return False
         return existing_attempts_count < self.max_attempts
 
