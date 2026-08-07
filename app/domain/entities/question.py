@@ -93,9 +93,9 @@ class Question:
     def ensure_attempt_available(
             self,
             existing_attempts_count: int,
-            has_correct_attempts: bool = False
+            has_correct_attempt: bool = False
     ) -> None:
-        if has_correct_attempts:
+        if has_correct_attempt:
             raise QuestionAlreadySolvedError("Question has already been solved.")
 
         if not self.can_start_attempt(existing_attempts_count):
