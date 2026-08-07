@@ -29,7 +29,7 @@ class UpdateLectureUseCase:
 
             await self.course_access_service.ensure_can_manage_section(
                 actor=command.actor,
-                section_id=command.lecture_id,
+                section_id=lecture.section_id,
             )
 
 
