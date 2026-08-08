@@ -39,3 +39,6 @@ class InvalidQuestionResultError(DomainError):
 
 class QuestionAlreadySolvedError(DomainError):
     pass
+
+class InvalidProgressError(DomainError):
+    pass
