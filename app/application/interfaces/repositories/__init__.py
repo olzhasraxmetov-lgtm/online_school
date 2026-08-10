@@ -3,6 +3,7 @@ from app.application.interfaces.repositories.answer_option_repository import Ans
 from app.application.interfaces.repositories.course_repository import CourseRepository
 from app.application.interfaces.repositories.lecture_repository import LectureRepository
 from app.application.interfaces.repositories.module_repository import ModuleRepository
+from app.application.interfaces.repositories.progress_repository import ProgressRepository
 from app.application.interfaces.repositories.question_attempt_repository import QuestionAttemptRepository
 from app.application.interfaces.repositories.question_repository import QuestionRepository
 from app.application.interfaces.repositories.section_repository import SectionRepository
@@ -16,6 +17,7 @@ __all__ = [
     "UserRepository",
     "QuestionRepository",
     "AnswerOptionRepository",
-    "QuestionAttemptRepository"
+    "QuestionAttemptRepository",
+    "ProgressRepository",
 ]
 
