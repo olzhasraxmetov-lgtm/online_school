@@ -1,19 +1,29 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
 
 if TYPE_CHECKING:
     from module_model import ModuleModel
+    from user_model import UserModel
 
 class CourseModel(Base):
     __tablename__ = 'courses'
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    author_id: Mapped[str] = mapped_column(
+        ForeignKey('users.id', ondelete='CASCADE'),
+        index=True
+    )
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String)
+
+    author: Mapped['UserModel'] = relationship(
+        'UserModel',
+        back_populates='courses',
+    )
 
     modules: Mapped[list["ModuleModel"]] = relationship(
         'ModuleModel',
