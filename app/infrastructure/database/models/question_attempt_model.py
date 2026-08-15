@@ -30,5 +30,5 @@ class QuestionAttemptModel(Base):
     )
     question: Mapped['QuestionModel'] = relationship(
         'QuestionModel',
-        back_populates='answer_options',
+        back_populates='attempts',
     )

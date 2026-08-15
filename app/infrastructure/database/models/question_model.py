@@ -34,5 +34,5 @@ class QuestionModel(Base):
         'QuestionAttemptModel',
         back_populates="question",
         cascade="all, delete-orphan",
-        order_by="QuestionAttemptModel.position",
+        order_by="QuestionAttemptModel.attempt_number",
     )
