@@ -1,3 +1,8 @@
+from app.presentation.api.schemas.answer import (
+    AnswerOptionResponse,
+    CreateAnswerOptionRequest,
+    UpdateAnswerOptionRequest
+)
 from app.presentation.api.schemas.auth import (
     RegisterUserRequest,
     RegisteredUserResponse,
@@ -31,6 +36,12 @@ from app.presentation.api.schemas.content.section import (
     SectionResponse,
 )
 from app.presentation.api.schemas.errors import ErrorResponse
+from app.presentation.api.schemas.question import (
+    QuestionResponse,
+    UpdateQuestionRequest,
+    CreateQuestionRequest,
+    UpdateQuestionRequest,
+)
 
 __all__ = [
     "CourseListItemResponse",
