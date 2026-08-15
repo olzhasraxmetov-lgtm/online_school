@@ -18,7 +18,7 @@ class CreateQuestionCommand:
     question_type: QuestionType
 
 @dataclass(slots=True)
-class QuestionCreateUseCase:
+class CreateQuestionUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
         self.course_access_service = CourseAccessService(uow)
