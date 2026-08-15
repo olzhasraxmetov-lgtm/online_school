@@ -1,5 +1,6 @@
 import typing
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Sequence
 from uuid import UUID
 
@@ -13,7 +14,7 @@ from app.domain.exceptions import (
 if typing.TYPE_CHECKING:
     from app.domain.entities.answer_option import AnswerOption
 
-class QuestionType:
+class QuestionType(StrEnum):
     SINGLE_CHOICE = 'single_choice'
     MULTIPLE_CHOICE = 'multiple_choice'
 
