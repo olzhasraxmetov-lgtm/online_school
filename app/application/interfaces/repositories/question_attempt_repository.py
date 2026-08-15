@@ -24,3 +24,7 @@ class QuestionAttemptRepository(ABC):
     @abstractmethod
     async def add(self, attempt: QuestionAttempt) -> None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def list_by_question_id(self, question_id: UUID) -> list[QuestionAttempt]:
+        raise NotImplementedError
