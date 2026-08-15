@@ -5,6 +5,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
+from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
+from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
 from app.application.use_cases.courses.get_course import GetCourseUseCase
@@ -18,6 +20,8 @@ from app.application.use_cases.lectures.update_lecture import UpdateLectureUseCa
 from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
+from app.application.use_cases.question.create_question import CreateQuestionUseCase
+from app.application.use_cases.question.update_question import UpdateQuestionUseCase
 from app.application.use_cases.sections.create_section import CreateSectionUseCase
 from app.application.use_cases.sections.delete_section import DeleteSectionUseCase
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
@@ -138,6 +142,9 @@ def get_login_user_use_case() -> LoginUserUseCase:
         token_service=get_token_service(),
     )
 
+
+
+
 http_bearer = HTTPBearer(auto_error=False)
 
 async def get_current_user(
@@ -168,3 +175,31 @@ async def get_current_admin(
     if not current_user.can_manage_platform():
         raise PermissionDeniedError("Admin access denied.")
     return current_user
+
+async def get_current_author_or_admin(
+        current_user: User = Depends(get_current_user),
+) -> User:
+    if not current_user.can_manage_content():
+        raise PermissionDeniedError("Author or admin access denied.")
+    return current_user
+
+def get_create_question_use_case() -> CreateQuestionUseCase:
+    return CreateQuestionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+    )
+
+def get_update_question_use_case() -> UpdateQuestionUseCase:
+    return UpdateQuestionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+    )
+
+def get_create_answer_option_use_case() -> CreateAnswerOptionUseCase:
+    return CreateAnswerOptionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+
+def get_update_answer_option_use_case() -> UpdateAnswerOptionUseCase:
+    return UpdateAnswerOptionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
