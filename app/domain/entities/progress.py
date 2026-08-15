@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from app.domain.entities import QuestionAttempt, Section, Module
+from app.domain.entities.module import Module
+from app.domain.entities.question_attempt import QuestionAttempt
+from app.domain.entities.section import Section
 from app.domain.exceptions import InvalidProgressError
 
 
