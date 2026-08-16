@@ -17,7 +17,6 @@ class CreateQuestionCommand:
     reward_points: int
     question_type: QuestionType
 
-@dataclass(slots=True)
 class CreateQuestionUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
@@ -32,7 +31,7 @@ class CreateQuestionUseCase:
 
             question = Question(
                 id=uuid4(),
-                section_id=section.id,
+                section_id=command.section_id,
                 text=command.text,
                 position=command.position,
                 max_attempts=command.max_attempts,
