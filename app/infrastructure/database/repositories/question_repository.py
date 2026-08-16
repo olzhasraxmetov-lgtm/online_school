@@ -1,11 +1,14 @@
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+
 from app.application.interfaces.repositories.question_repository import QuestionRepository
 from app.domain.entities.question import Question
 from app.infrastructure.database.mappers.question_mapper import QuestionMapper
 from app.infrastructure.database.models.question_model import QuestionModel
+
 
 class SqlAlchemyQuestionRepository(QuestionRepository):
     def __init__(self, session: AsyncSession):
@@ -17,7 +20,7 @@ class SqlAlchemyQuestionRepository(QuestionRepository):
             .options(
                 selectinload(QuestionModel.answer_options)
             )
-            .where(QuestionModel.id == question_id)
+            .where(QuestionModel.id == str(question_id))
         )
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
