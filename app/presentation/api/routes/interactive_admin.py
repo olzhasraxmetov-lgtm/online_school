@@ -14,7 +14,8 @@ from app.application.use_cases.question.update_question import UpdateQuestionUse
 from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_create_question_use_case,
-    get_current_author_or_admin, get_update_answer_option_use_case,
+    get_current_author_or_admin, get_update_answer_option_use_case, get_create_answer_option_use_case,
+    get_update_question_use_case,
 )
 from app.presentation.api.schemas import (
     CreateQuestionRequest,
@@ -64,7 +65,7 @@ async def create_question(
     return QuestionResponse.model_validate(result)
 
 @router.put(
-    "questions/{question_id}/",
+    "/questions/{question_id}/",
     response_model=QuestionResponse,
     summary="Update an existing question",
     description="Update an existing question inside the selected section.",
@@ -73,7 +74,7 @@ async def update_question(
         question_id: UUID,
         request: UpdateQuestionRequest,
         actor: User = Depends(get_current_author_or_admin),
-        use_case: UpdateQuestionUseCase = Depends(get_create_question_use_case),
+        use_case: UpdateQuestionUseCase = Depends(get_update_question_use_case),
 ):
     result = await use_case.execute(
         UpdateQuestionCommand(
@@ -99,7 +100,7 @@ async def create_answer_option(
         question_id: UUID,
         request: CreateAnswerOptionRequest,
         actor: User = Depends(get_current_author_or_admin),
-        use_case: CreateAnswerOptionUseCase = Depends(get_create_question_use_case),
+        use_case: CreateAnswerOptionUseCase = Depends(get_create_answer_option_use_case),
 ) -> AnswerOptionResponse:
     result = await use_case.execute(
         CreateAnswerOptionCommand(
