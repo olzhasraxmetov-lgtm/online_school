@@ -40,7 +40,7 @@ class CreateAnswerOptionUseCase:
 
             answer_option = AnswerOption(
                 id=uuid4(),
-                question_id=question.id,
+                question_id=command.question_id,
                 text=command.text,
                 is_correct=command.is_correct,
                 position=command.position,
