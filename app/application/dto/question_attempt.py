@@ -37,4 +37,4 @@ class QuestionAttemptResultDTO:
     result_status: QuestionResultStatus
     awarded_points: int
     checked_at: datetime
-    selected_options_ids: list[UUID]
+    selected_option_ids: list[UUID]
