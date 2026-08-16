@@ -7,6 +7,7 @@ from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities.user import User
 
+
 @dataclass(slots=True)
 class GetQuestionAttemptResultCommand:
     actor: User
@@ -21,22 +22,23 @@ class GetQuestionAttemptResultUseCase:
             self,
             command: GetQuestionAttemptResultCommand,
     ) -> QuestionAttemptResultDTO:
-        attempt = await self.uow.question_attempts.get_by_id(command.attempt_id)
-        if attempt is None:
-            raise QuestionAttemptNotFoundError("Question attempt not found.")
+        async with self.uow:
+            attempt = await self.uow.question_attempts.get_by_id(command.attempt_id)
+            if attempt is None:
+                raise QuestionAttemptNotFoundError("Question attempt not found.")
 
-        if attempt.student_id != command.actor.id:
-            await self.course_access_service.ensure_can_view_question_results(
-                actor=command.actor,
+            if attempt.student_id != command.actor.id:
+                await self.course_access_service.ensure_can_view_question_results(
+                    actor=command.actor,
+                    question_id=attempt.question_id,
+                )
+
+            return QuestionAttemptResultDTO(
+                attempt_id=attempt.id,
                 question_id=attempt.question_id,
+                attempt_number=attempt.attempt_number,
+                result_status=attempt.result_status,
+                awarded_points=attempt.awarded_points,
+                checked_at=attempt.checked_at,
+                selected_option_ids=list(attempt.selected_option_ids),
             )
-
-        return QuestionAttemptResultDTO(
-            attempt_id=attempt.id,
-            question_id=attempt.question_id,
-            attempt_number=attempt.attempt_number,
-            result_status=attempt.result_status,
-            awarded_points=attempt.awarded_points,
-            checked_at=attempt.checked_at,
-            selected_options_ids=list(attempt.selected_option_ids),
-        )
