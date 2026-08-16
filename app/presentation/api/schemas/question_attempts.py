@@ -11,14 +11,14 @@ class QuestionAttemptAnswerOptionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    title: str
+    text: str
     position: int
 
 class StartQuestionAttemptResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     question_id: UUID
-    title: str
+    text: str
     question_type: QuestionType
     attempt_number: int
     max_attempts: int
