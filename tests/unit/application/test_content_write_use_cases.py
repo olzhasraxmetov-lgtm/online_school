@@ -13,8 +13,24 @@ from app.application.use_cases.modules.create_module import CreateModuleUseCase,
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase, UpdateModuleCommand
 from app.application.use_cases.sections.create_section import CreateSectionUseCase, CreateSectionCommand
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
-from app.domain.entities import Course, Module, Lecture, Section
+from app.domain.entities import Course, Module, Lecture, Section, User, UserRole
 
+
+def make_author() -> User:
+    return User(
+        id=uuid4(),
+        email="author@example.com",
+        hashed_password="some-password",
+        role=UserRole.AUTHOR,
+    )
+
+def make_owned_course(author: User) -> Course:
+    return Course(
+        id=uuid4(),
+        author_id=author.id,
+        title='Course',
+        description='Description',
+    )
 
 class FakeCourseRepository:
     def __init__(self) -> None:
@@ -120,10 +136,12 @@ class FakeUnitOfWork(UnitOfWork):
 @pytest.mark.asyncio
 async def test_create_course_adds_course_and_commits() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
     use_case = CreateCourseUseCase(uow=uow)
 
     result = await use_case.execute(
         CreateCourseCommand(
+            actor=actor,
             title="FastAPI course",
             description="Clean architecture in practice.",
         )
@@ -137,18 +155,26 @@ async def test_create_course_adds_course_and_commits() -> None:
 @pytest.mark.asyncio
 async def test_update_course_changes_existing_course() -> None:
     uow = FakeUnitOfWork()
-    use_case = UpdateCourseUseCase(uow=uow)
-    course = Course(id=uuid4(), title="Old title", description="Old description")
+    actor = make_author()
+    course = Course(
+        id=uuid4(),
+        author_id=actor.id,
+        title="Old",
+        description="Old description",
+    )
     await uow.courses.add(course)
+
+    use_case = UpdateCourseUseCase(uow=uow)
     result = await use_case.execute(
         UpdateCourseCommand(
+            actor=actor,
             course_id=course.id,
-            title="New title",
+            title="New",
             description="New description",
         )
     )
 
-    assert result.title == "New title"
+    assert result.title == "New"
     assert result.description == "New description"
     assert uow.committed is True
 
@@ -156,10 +182,11 @@ async def test_update_course_changes_existing_course() -> None:
 async def test_update_course_raises_not_found_when_course_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = UpdateCourseUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(CourseNotFoundError):
         await use_case.execute(
             UpdateCourseCommand(
+                actor=actor,
                 course_id=uuid4(),
                 title="New",
                 description="New description",
@@ -168,12 +195,14 @@ async def test_update_course_raises_not_found_when_course_is_missing() -> None:
 @pytest.mark.asyncio
 async def test_create_module_adds_to_course_and_commits() -> None:
     uow = FakeUnitOfWork()
-    course = Course(id=uuid4(), title="Course", description="Course description")
+    actor = make_author()
+    course = make_owned_course(author=actor)
     await uow.courses.add(course)
 
     use_case = CreateModuleUseCase(uow=uow)
     result = await use_case.execute(
         CreateModuleCommand(
+            actor=actor,
             course_id=course.id,
             title="New module",
             description="New description",
@@ -189,10 +218,11 @@ async def test_create_module_adds_to_course_and_commits() -> None:
 async def test_create_module_raises_not_found_when_module_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = CreateModuleUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(CourseNotFoundError):
         await use_case.execute(
             CreateModuleCommand(
+                actor=actor,
                 course_id=uuid4(),
                 title="New module",
                 description="New description",
@@ -203,18 +233,22 @@ async def test_create_module_raises_not_found_when_module_is_missing() -> None:
 @pytest.mark.asyncio
 async def test_update_module_changes_existing_module() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
+    course = make_owned_course(actor)
+
     module = Module(
         id=uuid4(),
-        course_id=uuid4(),
+        course_id=course.id,
         title="Old module",
         description="Old description",
         position=1,
     )
+    await uow.courses.add(course)
     await uow.modules.add(module)
-
     use_case = UpdateModuleUseCase(uow=uow)
     result = await use_case.execute(
         UpdateModuleCommand(
+            actor=actor,
             module_id=module.id,
             title="New module",
             description="New description",
@@ -231,10 +265,11 @@ async def test_update_module_changes_existing_module() -> None:
 async def test_update_module_raises_not_found_when_module_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = UpdateModuleUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(ModuleNotFoundError):
         await use_case.execute(
             UpdateModuleCommand(
+                actor=actor,
                 module_id=uuid4(),
                 title="New module",
                 description="New description",
@@ -245,18 +280,22 @@ async def test_update_module_raises_not_found_when_module_is_missing() -> None:
 @pytest.mark.asyncio
 async def test_create_section_adds_section_to_module_and_commits() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
+    course = make_owned_course(author=actor)
     module = Module(
         id=uuid4(),
-        course_id=uuid4(),
+        course_id=course.id,
         title="Module",
         description="Description",
         position=1,
     )
+    await uow.courses.add(course)
     await uow.modules.add(module)
 
     use_case = CreateSectionUseCase(uow=uow)
     result = await use_case.execute(
         CreateSectionCommand(
+            actor=actor,
             module_id=module.id,
             title="Section 1",
             description="Section description",
@@ -273,10 +312,11 @@ async def test_create_section_adds_section_to_module_and_commits() -> None:
 async def test_create_section_raises_not_found_when_module_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = CreateSectionUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(ModuleNotFoundError):
         await use_case.execute(
             CreateSectionCommand(
+                actor=actor,
                 module_id=uuid4(),
                 title="Section 1",
                 description="Section description",
@@ -288,18 +328,24 @@ async def test_create_section_raises_not_found_when_module_is_missing() -> None:
 @pytest.mark.asyncio
 async def test_update_section_changes_existing_section() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
+    course = make_owned_course(author=actor)
+    module = Module(id=uuid4(), course_id=course.id, title="New title", description="New description", position=1)
     section = Section(
         id=uuid4(),
-        module_id=uuid4(),
+        module_id=module.id,
         title="Old section",
         description="Old description",
         position=1,
     )
+    await uow.courses.add(course)
+    await uow.modules.add(module)
     await uow.sections.add(section)
 
     use_case = UpdateSectionUseCase(uow=uow)
     result = await use_case.execute(
         UpdateSectionCommand(
+            actor=actor,
             section_id=section.id,
             title="New section",
             description="New description",
@@ -317,10 +363,11 @@ async def test_update_section_changes_existing_section() -> None:
 async def test_update_section_raises_not_found_when_section_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = UpdateSectionUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(SectionNotFoundError):
         await use_case.execute(
             UpdateSectionCommand(
+                actor=actor,
                 section_id=uuid4(),
                 title="New section",
                 description="New description",
@@ -332,18 +379,24 @@ async def test_update_section_raises_not_found_when_section_is_missing() -> None
 @pytest.mark.asyncio
 async def test_create_lecture_adds_lecture_to_section_and_commits() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
+    course = make_owned_course(author=actor)
+    module = Module(id=uuid4(), course_id=course.id, title="New title", description="New description", position=1)
     section = Section(
         id=uuid4(),
-        module_id=uuid4(),
+        module_id=module.id,
         title="Section",
         description="Description",
         position=1,
     )
+    await uow.courses.add(course)
+    await uow.modules.add(module)
     await uow.sections.add(section)
 
     use_case = CreateLectureUseCase(uow=uow)
     result = await use_case.execute(
         CreateLectureCommand(
+            actor=actor,
             section_id=section.id,
             title="Lecture 1",
             content="Lecture content",
@@ -360,10 +413,11 @@ async def test_create_lecture_adds_lecture_to_section_and_commits() -> None:
 async def test_create_lecture_raises_not_found_when_section_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = CreateLectureUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(SectionNotFoundError):
         await use_case.execute(
             CreateLectureCommand(
+                actor=actor,
                 section_id=uuid4(),
                 title="Lecture 1",
                 content="Lecture content",
@@ -375,18 +429,26 @@ async def test_create_lecture_raises_not_found_when_section_is_missing() -> None
 @pytest.mark.asyncio
 async def test_update_lecture_changes_existing_lecture() -> None:
     uow = FakeUnitOfWork()
+    actor = make_author()
+    course = Course(id=uuid4(), title="Course 1", description="Course description", author_id=actor.id)
+    module = Module(id=uuid4(), title="Old module", description="Old description", position=1, course_id=course.id)
+    section = Section(id=uuid4(), module_id=module.id, title="Section", description="Description")
     lecture = Lecture(
         id=uuid4(),
-        section_id=uuid4(),
+        section_id=section.id,
         title="Old lecture",
         content="Old content",
         position=1,
     )
+    await uow.courses.add(course)
+    await uow.modules.add(module)
+    await uow.sections.add(section)
     await uow.lectures.add(lecture)
 
     use_case = UpdateLectureUseCase(uow=uow)
     result = await use_case.execute(
         UpdateLectureCommand(
+            actor=actor,
             lecture_id=lecture.id,
             title="New lecture",
             content="New content",
@@ -404,10 +466,11 @@ async def test_update_lecture_changes_existing_lecture() -> None:
 async def test_update_lecture_raises_not_found_when_lecture_is_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = UpdateLectureUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(LectureNotFoundError):
         await use_case.execute(
             UpdateLectureCommand(
+                actor=actor,
                 lecture_id=uuid4(),
                 title="New lecture",
                 content="New content",
