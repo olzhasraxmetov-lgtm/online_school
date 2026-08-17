@@ -28,22 +28,24 @@ from app.domain.entities.course import Course
 from app.domain.entities.lecture import Lecture
 from app.domain.entities.module import Module
 from app.domain.entities.section import Section
-from tests.unit.application.test_content_write_use_cases import FakeUnitOfWork
+from test_content_write_use_cases import make_author
+from tests.unit.application.test_content_write_use_cases import FakeUnitOfWork, make_owned_course
 
 
 @pytest.mark.asyncio
 async def test_delete_existing_course() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteCourseUseCase(uow=uow)
-
+    actor = make_author()
     course = Course(
         id=uuid4(),
+        author_id=actor.id,
         title="Course title",
         description="Course Description",
     )
     await uow.courses.add(course)
     await use_case.execute(
-        DeleteCourseCommand(course_id=course.id)
+        DeleteCourseCommand(actor=actor, course_id=course.id)
     )
     assert course.id not in uow.courses.items
     assert uow.committed is True
@@ -52,18 +54,18 @@ async def test_delete_existing_course() -> None:
 async def test_delete_course_raises_not_found_when_its_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteCourseUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(CourseNotFoundError):
         await use_case.execute(
-            DeleteCourseCommand(course_id=uuid4())
+            DeleteCourseCommand(actor=actor,course_id=uuid4())
         )
 
 @pytest.mark.asyncio
 async def test_delete_existing_module() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteModuleUseCase(uow=uow)
-
-    course = Course(id=uuid4(), title="Course title", description="Course Description")
+    actor = make_author()
+    course = make_owned_course(actor)
     module = Module(
         id=uuid4(),
         course_id=course.id,
@@ -77,7 +79,7 @@ async def test_delete_existing_module() -> None:
     await uow.modules.add(module)
 
     await use_case.execute(
-        DeleteModuleCommand(module_id=module.id)
+        DeleteModuleCommand(module_id=module.id, actor=actor)
     )
     assert module.id not in uow.modules.items
     assert module.id not in course.module_ids
@@ -87,18 +89,18 @@ async def test_delete_existing_module() -> None:
 async def test_delete_module_raises_not_found_when_its_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteModuleUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(ModuleNotFoundError):
         await use_case.execute(
-            DeleteModuleCommand(module_id=uuid4())
+            DeleteModuleCommand(module_id=uuid4(), actor=actor)
         )
 
 @pytest.mark.asyncio
 async def test_delete_existing_section() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteSectionUseCase(uow=uow)
-
-    course = Course(id=uuid4(), title="Course title", description="Course Description")
+    actor = make_author()
+    course = make_owned_course(actor)
 
     module = Module(
         id=uuid4(),
@@ -120,7 +122,7 @@ async def test_delete_existing_section() -> None:
     await uow.sections.add(section)
 
     await use_case.execute(
-        DeleteSectionCommand(section_id=section.id)
+        DeleteSectionCommand(section_id=section.id, actor=actor)
     )
     assert section.id not in uow.sections.items
     assert section.id not in module.sections_ids
@@ -130,18 +132,18 @@ async def test_delete_existing_section() -> None:
 async def test_delete_section_raises_not_found_when_its_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteSectionUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(SectionNotFoundError):
         await use_case.execute(
-            DeleteSectionCommand(section_id=uuid4())
+            DeleteSectionCommand(section_id=uuid4(), actor=actor)
         )
 
 @pytest.mark.asyncio
 async def test_delete_existing_lecture() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteLectureUseCase(uow=uow)
-
-    course = Course(id=uuid4(), title="New title", description="New Description")
+    actor = make_author()
+    course = make_owned_course(actor)
     module = Module(
         id=uuid4(),
         title="Module title",
@@ -170,7 +172,7 @@ async def test_delete_existing_lecture() -> None:
     await uow.lectures.add(lecture)
 
     await use_case.execute(
-        DeleteLectureCommand(lecture_id=lecture.id)
+        DeleteLectureCommand(lecture_id=lecture.id, actor=actor)
     )
     assert lecture.id not in uow.lectures.items
     assert lecture.id not in section.lecture_ids
@@ -180,8 +182,8 @@ async def test_delete_existing_lecture() -> None:
 async def test_delete_lecture_raises_not_found_when_its_missing() -> None:
     uow = FakeUnitOfWork()
     use_case = DeleteLectureUseCase(uow=uow)
-
+    actor = make_author()
     with pytest.raises(LectureNotFoundError):
         await use_case.execute(
-            DeleteLectureCommand(lecture_id=uuid4())
+            DeleteLectureCommand(lecture_id=uuid4(), actor=actor)
         )
