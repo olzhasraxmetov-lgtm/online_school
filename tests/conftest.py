@@ -71,7 +71,7 @@ async def clear_database(session_factory) -> None:
         await session.commit()
 
 @pytest_asyncio.fixture
-async def seeded_course_tree(session_factory):
+async def seeded_course_tree(session_factory, seeded_admin_user):
     course_id = str(uuid4())
     module_id = str(uuid4())
     section_id = str(uuid4())
@@ -80,6 +80,7 @@ async def seeded_course_tree(session_factory):
     async with session_factory() as session:
         course = CourseModel(
             id=course_id,
+            author_id=seeded_admin_user.id,
             title='FastAPI course',
             description='Clean architecture in practice.',
         )
