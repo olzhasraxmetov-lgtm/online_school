@@ -11,12 +11,17 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 import app.presentation.api.dependencies as api_dependencies
+from app.domain.entities.question import QuestionType
 from app.infrastructure.database.models import (
     Base,
     CourseModel,
     LectureModel,
     SectionModel,
-    UserModel
+    UserModel,
+    QuestionModel,
+    AnswerOptionModel,
+    ProgressModel,
+    QuestionAttemptModel,
 )
 from app.infrastructure.database.models import ModuleModel
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -66,7 +71,17 @@ async def client(app) -> AsyncIterator[AsyncClient]:
 @pytest_asyncio.fixture(autouse=True)
 async def clear_database(session_factory) -> None:
     async with session_factory() as session:
-        for model in [LectureModel, SectionModel, ModuleModel, CourseModel, UserModel]:
+        for model in [
+            AnswerOptionModel,
+            QuestionAttemptModel,
+            ProgressModel,
+            QuestionModel,
+            LectureModel,
+            SectionModel,
+            ModuleModel,
+            CourseModel,
+            UserModel
+        ]:
             await session.execute(delete(model))
         await session.commit()
 
@@ -131,6 +146,50 @@ async def seeded_student_user(session_factory):
         await session.refresh(user)
         return user
 
+
+@pytest_asyncio.fixture
+async def seeded_author_user(session_factory):
+    hasher = PwdlibPasswordHasher()
+    async with session_factory() as session:
+        user = UserModel(
+            id=str(uuid4()),
+            email='author@example.com',
+            hashed_password=hasher.hash('new_password1234'),
+            role='author',
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+@pytest_asyncio.fixture
+async def seeded_other_author_user(session_factory):
+    hasher = PwdlibPasswordHasher()
+    async with session_factory() as session:
+        user = UserModel(
+            id=str(uuid4()),
+            email='other-author@example.com',
+            hashed_password=hasher.hash('strongpassword123'),
+            role='author',
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+
+@pytest_asyncio.fixture
+async def other_author_auth_headers(client, seeded_other_author_user):
+    response = await client.post(
+        '/api/auth/login',
+        json={
+            'email': 'other-author@example.com',
+            'password': 'strongpassword123',
+        },
+    )
+    token = response.json()['access_token']
+    return {'Authorization': f'Bearer {token}'}
+
 @pytest_asyncio.fixture
 async def seeded_admin_user(session_factory):
     hasher = PwdlibPasswordHasher()
@@ -145,6 +204,18 @@ async def seeded_admin_user(session_factory):
         await session.commit()
         await session.refresh(user)
         return user
+
+@pytest_asyncio.fixture
+async def author_auth_headers(client, seeded_author_user):
+    response = await client.post(
+        'api/auth/login',
+        json={
+            "email": "author@example.com",
+            "password": "new_password1234",
+        }
+    )
+    token = response.json()['access_token']
+    return {'Authorization': f'Bearer {token}'}
 
 @pytest_asyncio.fixture
 async def student_auth_headers(client, seeded_student_user):
@@ -169,3 +240,89 @@ async def admin_auth_headers(client, seeded_admin_user):
     )
     token = response.json()['access_token']
     return {'Authorization': f'Bearer {token}'}
+
+@pytest_asyncio.fixture
+async def seeded_interactive_tree(session_factory, seeded_author_user):
+    course_id = str(uuid4())
+    module_id = str(uuid4())
+    section_id = str(uuid4())
+    lecture_id = str(uuid4())
+    question_id = str(uuid4())
+    wrong_option_id = str(uuid4())
+    correct_option_id = str(uuid4())
+
+    async with session_factory() as session:
+        course = CourseModel(
+            id=course_id,
+            author_id=seeded_author_user.id,
+            title=f"FastAPI Fundamentals",
+            description=f"FastAPI Fundamentals questions",
+        )
+        module = ModuleModel(
+            id=module_id,
+            course_id=course_id,
+            title=f"Running FastAPI app",
+            description=f"How to use FastAPI app",
+            position=1
+        )
+        section = SectionModel(
+            id=section_id,
+            module_id=module_id,
+            title=f"What we need?",
+            description="Description for section",
+            position=1
+        )
+        lecture = LectureModel(
+            id=lecture_id,
+            section_id=section_id,
+            title=f"Uvicorn",
+            content="Lecture content",
+            position=1
+        )
+        question = QuestionModel(
+            id=question_id,
+            section_id=section_id,
+            text="Which port does uvicorn use as default?",
+            position=1,
+            question_type='single_choice',
+            max_attempts=2,
+            reward_points=5
+        )
+        wrong_option = AnswerOptionModel(
+            id=wrong_option_id,
+            question_id=question_id,
+            text="3000",
+            position=1,
+            is_correct=False,
+        )
+        correct_option = AnswerOptionModel(
+            id=correct_option_id,
+            question_id=question_id,
+            text="8000",
+            position=1,
+            is_correct=True
+        )
+
+        session.add_all(
+            [
+                course,
+                module,
+                section,
+                lecture,
+                question,
+                wrong_option,
+                correct_option,
+            ]
+        )
+
+        await session.commit()
+
+    return SimpleNamespace(
+        course_id=course_id,
+        module_id=module_id,
+        section_id=section_id,
+        lecture_id=lecture_id,
+        question_id=question_id,
+        wrong_option_id=wrong_option_id,
+        correct_option_id=correct_option_id,
+    )
