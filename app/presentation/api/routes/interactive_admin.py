@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, status
 
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase, \
     CreateAnswerOptionCommand
+from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase, \
+    DeleteAnswerOptionCommand
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase, \
     UpdateAnswerOptionCommand
 from app.application.use_cases.question.create_question import (
@@ -16,7 +18,7 @@ from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_create_question_use_case,
     get_current_author_or_admin, get_update_answer_option_use_case, get_create_answer_option_use_case,
-    get_update_question_use_case, get_delete_question_use_case,
+    get_update_question_use_case, get_delete_question_use_case, get_delete_answer_option_use_case,
 )
 from app.presentation.api.schemas import (
     CreateQuestionRequest,
@@ -149,3 +151,16 @@ async def update_answer_option(
         )
     )
     return AnswerOptionResponse.model_validate(result)
+
+@router.delete(
+    '/answer-options/{answer_option_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete an answer option',
+    description='Deletes an existing answer option inside the selected question.',
+)
+async def delete_answer_option(
+        answer_option_id: UUID,
+        actor: User = Depends(get_current_author_or_admin),
+        use_case: DeleteAnswerOptionUseCase = Depends(get_delete_answer_option_use_case)
+):
+    return await use_case.execute(DeleteAnswerOptionCommand(actor=actor, answer_option_id=answer_option_id))
