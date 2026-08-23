@@ -10,12 +10,13 @@ from app.application.use_cases.question.create_question import (
     CreateQuestionCommand,
     CreateQuestionUseCase,
 )
+from app.application.use_cases.question.delete_question import DeleteQuestionUseCase, DeleteQuestionCommand
 from app.application.use_cases.question.update_question import UpdateQuestionUseCase, UpdateQuestionCommand
 from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_create_question_use_case,
     get_current_author_or_admin, get_update_answer_option_use_case, get_create_answer_option_use_case,
-    get_update_question_use_case,
+    get_update_question_use_case, get_delete_question_use_case,
 )
 from app.presentation.api.schemas import (
     CreateQuestionRequest,
@@ -88,6 +89,19 @@ async def update_question(
         )
     )
     return QuestionResponse.model_validate(result)
+
+@router.delete(
+    "/questions/{question_id}",
+    summary="Delete an existing question",
+    description="Delete an existing question inside the selected section.",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_question(
+        question_id: UUID,
+        actor: User = Depends(get_current_author_or_admin),
+        use_case: DeleteQuestionUseCase = Depends(get_delete_question_use_case),
+):
+    return await use_case.execute(DeleteQuestionCommand(actor=actor, question_id=question_id))
 
 @router.post(
     "/questions/{question_id}/answers-options",
