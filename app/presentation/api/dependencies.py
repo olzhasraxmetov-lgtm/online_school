@@ -21,6 +21,7 @@ from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
 from app.application.use_cases.question.create_question import CreateQuestionUseCase
+from app.application.use_cases.question.delete_question import DeleteQuestionUseCase
 from app.application.use_cases.question.update_question import UpdateQuestionUseCase
 from app.application.use_cases.question_attempts.get_question_attempt_result import GetQuestionAttemptResultUseCase
 from app.application.use_cases.question_attempts.start_question_attempt import StartQuestionAttemptUseCase
@@ -188,6 +189,11 @@ async def get_current_author_or_admin(
 
 def get_create_question_use_case() -> CreateQuestionUseCase:
     return CreateQuestionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+    )
+
+def get_delete_question_use_case() -> DeleteQuestionUseCase:
+    return DeleteQuestionUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
     )
 
