@@ -55,7 +55,7 @@ class Question:
         correct_options_count = sum(1 for option in answer_options if option.is_correct)
 
         if correct_options_count == 0:
-            raise InvalidQuestionError("Question must have at least one answer option.")
+            raise InvalidQuestionError("Question must have at least one correct answer option.")
 
         if self.is_single_choice() and correct_options_count != 1:
             raise InvalidQuestionError(
