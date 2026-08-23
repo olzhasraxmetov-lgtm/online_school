@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
+from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
@@ -210,6 +211,11 @@ def get_create_answer_option_use_case() -> CreateAnswerOptionUseCase:
 
 def get_update_answer_option_use_case() -> UpdateAnswerOptionUseCase:
     return UpdateAnswerOptionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_answer_option_use_case() -> DeleteAnswerOptionUseCase:
+    return DeleteAnswerOptionUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
