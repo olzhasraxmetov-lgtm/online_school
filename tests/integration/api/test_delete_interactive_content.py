@@ -124,9 +124,19 @@ async def test_author_cannot_delete_answer_option_and_question_when_it_has_stude
 
     assert submit_response.status_code == 201
 
+
+
     delete_option_response = await client.delete(
         f'/api/admin/questions/{seeded_interactive_tree.question_id}',
         headers=author_auth_headers
     )
     assert delete_option_response.status_code == 400
     assert delete_option_response.json()['error'] == 'application_error'
+
+    answer_option_delete_response = await client.delete(
+        f'/api/admin/answer-options/{seeded_interactive_tree.wrong_option_id}',
+        headers=author_auth_headers,
+    )
+
+    assert answer_option_delete_response.status_code == 400
+    assert answer_option_delete_response.json()['error'] == 'application_error'
