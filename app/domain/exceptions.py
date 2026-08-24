@@ -42,3 +42,12 @@ class QuestionAlreadySolvedError(DomainError):
 
 class InvalidProgressError(DomainError):
     pass
+
+class InvalidTaskError(DomainError):
+    pass
+
+class SectionTaskAlreadyAttachedError(DomainError):
+    pass
+
+class SectionTaskNotAttachedError(DomainError):
+    pass
