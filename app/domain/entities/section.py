@@ -3,7 +3,7 @@ from typing import Collection
 from uuid import UUID
 
 from app.domain.exceptions import InvalidSectionError, SectionQuestionAlreadyAttachedError, \
-    SectionQuestionNotAttachedError
+    SectionQuestionNotAttachedError, SectionTaskAlreadyAttachedError
 
 
 @dataclass(slots=True)
@@ -15,6 +15,7 @@ class Section:
     position: int = 1
     lecture_ids: list[UUID] = field(default_factory=list)
     question_ids: list[UUID] = field(default_factory=list)
+    task_ids: list[UUID] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._validate()
@@ -39,6 +40,20 @@ class Section:
         if lecture_id in self.lecture_ids:
             self.lecture_ids.remove(lecture_id)
 
+    def add_task(self, task_id: UUID) -> None:
+        if task_id in self.task_ids:
+            raise SectionTaskAlreadyAttachedError(
+                "Section task already attached to this task."
+            )
+        self.task_ids.append(task_id)
+
+    def remove_task(self, task_id: UUID) -> None:
+        if task_id not in self.task_ids:
+            raise SectionTaskAlreadyAttachedError(
+                "Section task already attached to this task."
+            )
+        self.task_ids.remove(task_id)
+
     def add_question(self, question_id: UUID) -> None:
         if question_id in self.question_ids:
             raise SectionQuestionAlreadyAttachedError(
@@ -55,13 +70,26 @@ class Section:
     def has_questions(self) -> bool:
         return bool(self.question_ids)
 
+    def has_tasks(self) -> bool:
+        return bool(self.task_ids)
+
     def contains_question(self, question_id: UUID) -> bool:
         return question_id in self.question_ids
 
-    def can_be_completed(self) -> bool:
-        return bool(self.question_ids)
+    def contains_task(self, task_id: UUID) -> bool:
+        return task_id in self.task_ids
 
-    def is_completed_by(self, completed_question_ids: Collection[UUID]) -> bool:
+    def can_be_completed(self) -> bool:
+        return bool(self.question_ids or self.task_ids)
+
+    def is_completed_by(
+            self,
+            completed_question_ids: Collection[UUID],
+            completed_task_ids: Collection[UUID] | None = None
+    ) -> bool:
         if not self.can_be_completed():
             return False
-        return all(question_id in completed_question_ids for question_id in self.question_ids)
+        return (
+            all(question_id in completed_question_ids for question_id in self.question_ids)
+            and all(task_id in completed_task_ids for task_id in self.task_ids)
+        )
