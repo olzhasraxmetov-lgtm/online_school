@@ -1,8 +1,15 @@
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
+from enum import StrEnum
 from uuid import UUID
 
 from app.domain.exceptions import InvalidTaskError, TaskAlreadySolvedError, TaskAttemptLimitExceededError
 
+
+class TaskCheckType(StrEnum):
+    EXACT_MATCH = 'exact_match'
+    ANY_OF = 'any_of'
+    REGEX = 'regex'
 
 @dataclass(slots=True)
 class Task:
@@ -11,6 +18,10 @@ class Task:
     title: str
     statement: str
     position: int
+    check_type: TaskCheckType = TaskCheckType.EXACT_MATCH
+    accepted_answers: list[str] = field(default_factory=list)
+    answer_pattern: str = ''
+    expected_answer: str = ''
     max_attempts: int = 1
     reward_points: int = 1
 
@@ -28,6 +39,20 @@ class Task:
             raise InvalidTaskError("Task max attempts must be positive.")
         if self.reward_points < 1:
             raise InvalidTaskError("Task reward points must be positive.")
+        if self.check_type is TaskCheckType.EXACT_MATCH:
+            if not self.expected_answer or not self.expected_answer.strip():
+                raise InvalidTaskError("Exact-match task must be define expected answer.")
+        if self.check_type is TaskCheckType.ANY_OF:
+            if len(self.accepted_answers) == 0:
+                raise InvalidTaskError("Ant-of task must be defined accepted answers.")
+
+        if self.check_type is TaskCheckType.REGEX:
+            if not self.answer_pattern or not self.answer_pattern.strip():
+                raise InvalidTaskError("Regex must be define answer_pattern.")
+            try:
+                re.compile(self.answer_pattern)
+            except re.error as exc:
+                raise InvalidTaskError("Task answer_pattern is invalid.") from exc
 
     def update(self, title: str,  statement: str, position: int) -> None:
         self.title = title
@@ -62,3 +87,31 @@ class Task:
             raise TaskAlreadySolvedError("Task has already been solved.")
         if not self.can_start_attempt(existing_attempts_count):
             raise TaskAttemptLimitExceededError("Task attempt limit has been exceeded.")
+
+    def normalize_answer(self, answer: str) -> str:
+        return answer.strip()
+
+    def is_correct_answer(self, answer: str) -> bool:
+        normalized_actual = self.normalize_answer(answer)
+
+        if self.check_type is TaskCheckType.EXACT_MATCH:
+            normalized_expected = self.normalize_answer(self.expected_answer)
+            return normalized_actual == normalized_expected
+
+        if self.check_type is TaskCheckType.ANY_OF:
+            return normalized_actual in self.normalized_accepted_answers()
+
+        if self.check_type is TaskCheckType.REGEX:
+            return re.fullmatch(self.answer_pattern, normalized_actual) is not None
+
+        raise InvalidTaskError("Unsupported task check type.")
+
+    def normalized_accepted_answers(self) -> list[str]:
+        normalized: list[str] = []
+        for item in self.accepted_answers:
+            value = self.normalize_answer(item)
+            if not value:
+                continue
+            if value not in normalized:
+                normalized.append(value)
+        return normalized
