@@ -1,7 +1,8 @@
-from  abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from uuid import UUID
 
 from app.domain.entities.task import Task
+
 
 class TaskRepository(ABC):
     @abstractmethod
@@ -13,5 +14,5 @@ class TaskRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, task_id: UUID) -> None:
+    async def update(self, task: Task) -> None:
         raise NotImplementedError
