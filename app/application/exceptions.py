@@ -17,7 +17,6 @@ class SectionNotFoundError(ApplicationError):
 class UserAlreadyExistsError(ApplicationError):
     pass
 
-
 class InvalidCredentialsError(ApplicationError):
     pass
 
@@ -34,4 +33,10 @@ class QuestionAlreadyUsedError(ApplicationError):
     pass
 
 class QuestionAttemptNotFoundError(ApplicationError):
+    pass
+
+class TaskNotFoundError(ApplicationError):
+    pass
+
+class TaskAlreadyUsedError(ApplicationError):
     pass
