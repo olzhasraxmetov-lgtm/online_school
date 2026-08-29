@@ -4,6 +4,7 @@ from uuid import UUID
 from app.domain.entities.module import Module
 from app.domain.entities.question_attempt import QuestionAttempt
 from app.domain.entities.section import Section
+from app.domain.entities.task_attempt import TaskAttempt
 from app.domain.exceptions import InvalidProgressError
 
 
@@ -15,6 +16,7 @@ class Progress:
     completed_question_ids: list[UUID] = field(default_factory=list)
     completed_section_ids: list[UUID] = field(default_factory=list)
     completed_module_ids: list[UUID] = field(default_factory=list)
+    completed_task_ids: list[UUID] = field(default_factory=list)
     total_points: int = 0
 
     def __post_init__(self):
@@ -27,6 +29,8 @@ class Progress:
             raise InvalidProgressError("Progress cannot contain duplicate completed sections.")
         if len(self.completed_module_ids) != len(set(self.completed_module_ids)):
             raise InvalidProgressError("Progress cannot contain duplicate completed modules.")
+        if len(self.completed_task_ids) != len(set(self.completed_task_ids)):
+            raise InvalidProgressError("Progress cannot contain duplicate completed tasks.")
         if self.total_points < 0:
             raise InvalidProgressError("Progress total points cannot be negative.")
 
@@ -39,6 +43,13 @@ class Progress:
     def has_completed_section(self, section_id: UUID) -> bool:
         return section_id in self.completed_section_ids
 
+    def has_completed_task(self, task_id: UUID) -> bool:
+        return task_id in self.completed_task_ids
+
+    def mark_task_completed(self, task_id: UUID) -> None:
+        if task_id not in self.completed_task_ids:
+            self.completed_task_ids.append(task_id)
+
     def mark_question_complete(self, question_id: UUID):
         if question_id not in self.completed_question_ids:
             self.completed_question_ids.append(question_id)
@@ -50,6 +61,21 @@ class Progress:
     def mark_module_completed(self, module_id: UUID) -> None:
         if module_id not in self.completed_module_ids:
             self.completed_module_ids.append(module_id)
+
+    def apply_correct_task_attempt(self, attempt: TaskAttempt) -> bool:
+        if attempt.student_id != self.student_id:
+            raise InvalidProgressError("Task attempt does not belong to this student.")
+
+        if not attempt.is_correct:
+            return False
+
+        already_completed = self.has_completed_task(attempt.task_id)
+        if already_completed:
+            return False
+
+        self.mark_task_completed(attempt.task_id)
+        self.add_points(attempt.awarded_points)
+        return True
 
     def apply_correct_attempt(self, attempt: QuestionAttempt) -> bool:
         if attempt.student_id != self.student_id:
@@ -66,7 +92,10 @@ class Progress:
         return True
 
     def sync_section_completion(self, section: Section) -> bool:
-        if not section.is_completed_by(self.completed_question_ids):
+        if not section.is_completed_by(
+            completed_question_ids=self.completed_question_ids,
+            completed_task_ids=self.completed_task_ids,
+        ):
             return False
 
         already_completed = self.has_completed_section(section_id=section.id)
