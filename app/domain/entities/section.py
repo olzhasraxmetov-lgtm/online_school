@@ -89,6 +89,9 @@ class Section:
     ) -> bool:
         if not self.can_be_completed():
             return False
+
+        completed_task_ids = completed_task_ids or ()
+
         return (
             all(question_id in completed_question_ids for question_id in self.question_ids)
             and all(task_id in completed_task_ids for task_id in self.task_ids)
