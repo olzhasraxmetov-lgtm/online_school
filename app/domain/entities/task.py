@@ -1,8 +1,11 @@
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-from uuid import UUID
+from uuid import UUID, uuid4
+import re
 
+from app.domain.entities.task_attempt import TaskAttempt, TaskAttemptStatus
+from app.domain.entities.task_attempt import TaskAttempt
 from app.domain.exceptions import InvalidTaskError, TaskAlreadySolvedError, TaskAttemptLimitExceededError
 
 
@@ -59,6 +62,47 @@ class Task:
         self.statement = statement
         self.position = position
         self._validate()
+
+    def next_attempt_number(self, existing_attempts_count: int) -> int:
+        if existing_attempts_count < 0:
+            raise InvalidTaskError("Existing attempts count must be positive.")
+        return existing_attempts_count + 1
+
+    def checK_attempt(self, attempt: TaskAttempt) -> None:
+        if attempt.task_id != self.id:
+            raise InvalidTaskError("Task attempt does not belong to this task.")
+
+        is_correct = self.is_correct_answer(attempt.submitted_answer)
+
+        status = (
+            TaskAttemptStatus.CORRECT
+            if is_correct
+            else TaskAttemptStatus.INCORRECT
+        )
+        awarded_points = self.reward_points if is_correct else 0
+
+        attempt.apply_result(status=status, awarded_points=awarded_points)
+
+    def create_attempt(
+            self,
+            student_id: UUID,
+            submitted_answer: str,
+            existing_attempts_count: int,
+            has_correct_attempt: bool = False,
+    ) -> TaskAttempt:
+        self.ensure_attempt_available(
+            existing_attempts_count=existing_attempts_count,
+            has_correct_attempt=has_correct_attempt,
+        )
+
+        return TaskAttempt(
+            id=uuid4(),
+            task_id=self.id,
+            student_id=student_id,
+            submitted_answer=submitted_answer,
+            attempt_number=self.next_attempt_number(existing_attempts_count),
+        )
+
 
     def allows_multiple_attempts(self) -> bool:
         return self.max_attempts > 1
