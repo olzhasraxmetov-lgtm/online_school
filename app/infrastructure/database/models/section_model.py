@@ -8,6 +8,7 @@ from app.infrastructure.database.models.base import Base
 if TYPE_CHECKING:
     from module_model import ModuleModel
     from lecture_model import LectureModel
+    from task_model import TaskModel
     from question_model import QuestionModel
 
 class SectionModel(Base):
@@ -32,4 +33,11 @@ class SectionModel(Base):
         back_populates="section",
         cascade="all, delete-orphan",
         order_by="QuestionModel.position",
+    )
+
+    tasks: Mapped[list["TaskModel"]] = relationship(
+        'TaskModel',
+        back_populates='section',
+        cascade='all, delete-orphan',
+        order_by='TaskModel.position',
     )
