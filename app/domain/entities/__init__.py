@@ -1,4 +1,5 @@
 from app.domain.entities.answer_option import AnswerOption
+from app.domain.entities.code_task import CodeTask, CodeTaskLanguage
 from app.domain.entities.course import Course
 from app.domain.entities.lecture import Lecture
 from app.domain.entities.module import Module
@@ -22,4 +23,6 @@ __all__ = [
     "QuestionResultStatus",
     "Progress",
     "Task",
+    "CodeTask",
+    "CodeTaskLanguage",
 ]
