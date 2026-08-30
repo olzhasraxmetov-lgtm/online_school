@@ -2,6 +2,7 @@ from app.domain.entities.answer_option import AnswerOption
 from app.domain.entities.code_submission import CodeSubmission, CodeSubmissionStatus
 from app.domain.entities.code_task import CodeTask, CodeTaskLanguage
 from app.domain.entities.course import Course
+from app.domain.entities.execution_result import ExecutionResult, ExecutionStatus
 from app.domain.entities.lecture import Lecture
 from app.domain.entities.module import Module
 from app.domain.entities.progress import Progress
@@ -30,4 +31,6 @@ __all__ = [
     "CodeSubmission",
     "CodeSubmissionStatus",
     "TestCase",
+    "ExecutionStatus",
+    "ExecutionResult",
 ]
