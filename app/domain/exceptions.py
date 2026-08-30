@@ -81,3 +81,6 @@ class CodeTaskAlreadySolvedError(DomainError):
 
 class InvalidTestCaseError(DomainError):
     pass
+
+class InvalidExecutionResultError(DomainError):
+    pass
