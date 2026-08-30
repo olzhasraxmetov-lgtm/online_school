@@ -10,7 +10,9 @@ from app.infrastructure.database.repositories import (
     SqlAlchemyAnswerOptionRepository,
     SqlAlchemyQuestionRepository,
     SqlAlchemyQuestionAttemptRepository,
-    SqlAlchemyProgressRepository
+    SqlAlchemyProgressRepository,
+    SqlAlchemyTaskRepository,
+    SqlAlchemyTaskAttemptRepository,
 )
 
 
@@ -38,6 +40,8 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
         self.questions = SqlAlchemyQuestionRepository(session=self.session)
         self.answer_options = SqlAlchemyAnswerOptionRepository(session=self.session)
         self.question_attempts = SqlAlchemyQuestionAttemptRepository(session=self.session)
+        self.tasks = SqlAlchemyTaskRepository(self.session)
+        self.task_attempts = SqlAlchemyTaskAttemptRepository(self.session)
         self.progress = SqlAlchemyProgressRepository(session=self.session)
         return self
 
