@@ -1,4 +1,5 @@
 from app.domain.entities.answer_option import AnswerOption
+from app.domain.entities.code_submission import CodeSubmission, CodeSubmissionStatus
 from app.domain.entities.code_task import CodeTask, CodeTaskLanguage
 from app.domain.entities.course import Course
 from app.domain.entities.lecture import Lecture
@@ -8,6 +9,7 @@ from app.domain.entities.question import Question
 from app.domain.entities.question_attempt import QuestionAttempt, QuestionResultStatus
 from app.domain.entities.section import Section
 from app.domain.entities.task import Task
+from app.domain.entities.test_case import TestCase
 from app.domain.entities.user import UserRole, User
 
 __all__ = [
@@ -25,4 +27,7 @@ __all__ = [
     "Task",
     "CodeTask",
     "CodeTaskLanguage",
+    "CodeSubmission",
+    "CodeSubmissionStatus",
+    "TestCase",
 ]
