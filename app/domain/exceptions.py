@@ -60,3 +60,12 @@ class TaskAttemptLimitExceededError(DomainError):
 
 class TaskAlreadySolvedError(DomainError):
     pass
+
+class InvalidCodeTaskError(DomainError):
+    pass
+
+class SectionCodeTaskAlreadyAttachedError(DomainError):
+    pass
+
+class SectionCodeTaskNotAttachedError(DomainError):
+    pass
