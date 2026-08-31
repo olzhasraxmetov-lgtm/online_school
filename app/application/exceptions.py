@@ -40,3 +40,15 @@ class TaskNotFoundError(ApplicationError):
 
 class TaskAlreadyUsedError(ApplicationError):
     pass
+
+class CodeSubmissionNotFoundError(ApplicationError):
+    pass
+
+class CodeTaskNotFoundError(ApplicationError):
+    pass
+
+class CodeTaskAlreadyUsedError(ApplicationError):
+    pass
+
+class TestCaseNotFoundError(ApplicationError):
+    pass
