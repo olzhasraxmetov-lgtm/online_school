@@ -3,6 +3,7 @@ from enum import StrEnum
 from uuid import UUID, uuid4
 
 from app.domain.entities.code_submission import CodeSubmission
+from app.domain.entities.test_case import TestCase
 from app.domain.exceptions import InvalidCodeTaskError, CodeTaskAlreadySolvedError, CodeSubmissionLimitExceededError
 
 
@@ -43,7 +44,7 @@ class CodeTask:
         if self.memory_limit_mb < 16:
             raise InvalidCodeTaskError('CodeTask memory_limit_mb is too small.')
 
-    def update(
+    def update_content(
             self,
             title: str,
             statement: str,
@@ -56,6 +57,40 @@ class CodeTask:
         self.starter_code = starter_code
         self._validate()
 
+    def ensure_execution_policy_can_be_changed(self, has_submission: bool) -> None:
+        if has_submission:
+            raise InvalidCodeTaskError(
+                'CodeTask execution policy cannot be changed after submissions.'
+            )
+
+    def ensure_learning_policy_can_be_changed(self, has_submissions: bool) -> None:
+        if has_submissions:
+            raise InvalidCodeTaskError(
+                'CodeTask learning policy cannot be changed after submissions.'
+            )
+
+    def ensure_test_cases_can_be_changed(self, has_submissions: bool) -> None:
+        if has_submissions:
+            raise InvalidCodeTaskError(
+                'CodeTask test cases cannot be changed after submissions.'
+            )
+
+    def update_learning_policy(self, max_attempts: int, reward_points: int) -> None:
+        self.max_attempts = max_attempts
+        self.reward_points = reward_points
+        self._validate()
+
+    def update_execution_policy(
+            self,
+            language: CodeTaskLanguage,
+            time_limit_seconds: int,
+            memory_limit_mb: int,
+    ) -> None:
+        self.language = language
+        self.time_limit_seconds = time_limit_seconds
+        self.memory_limit_mb = memory_limit_mb
+        self._validate()
+
     def add_test_case(self, test_case_id: UUID) -> None:
         if test_case_id not in self.test_case_ids:
             self.test_case_ids.append(test_case_id)
@@ -63,6 +98,26 @@ class CodeTask:
     def remove_test_case(self, test_case_id: UUID) -> None:
         if test_case_id in self.test_case_ids:
             self.test_case_ids.remove(test_case_id)
+
+    def create_test_case(
+            self,
+            position: int,
+            input_data: str,
+            expected_output: str,
+            is_hidden: bool = True,
+            explanation: str = '',
+    ) -> TestCase:
+        test_case = TestCase(
+            id=uuid4(),
+            code_task_id=self.id,
+            position=position,
+            input_data=input_data,
+            expected_output=expected_output,
+            is_hidden=is_hidden,
+            explanation=explanation,
+        )
+        self.add_test_case(test_case.id)
+        return test_case
 
     def has_test_cases(self) -> bool:
         return bool(self.test_case_ids)
