@@ -11,7 +11,7 @@ from app.application.interfaces.repositories import (
     QuestionAttemptRepository,
     ProgressRepository,
     TaskRepository,
-    TaskAttemptRepository,
+    TaskAttemptRepository, CodeTaskRepository, TestCaseRepository,
 )
 
 
@@ -27,6 +27,8 @@ class UnitOfWork(ABC):
     tasks: TaskRepository
     task_attempts: TaskAttemptRepository
     progress: ProgressRepository
+    code_tasks: CodeTaskRepository
+    test_cases: TestCaseRepository
 
     @abstractmethod
     async def __aenter__(self) -> "UnitOfWork":
