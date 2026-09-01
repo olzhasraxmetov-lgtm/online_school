@@ -52,3 +52,6 @@ class CodeTaskAlreadyUsedError(ApplicationError):
 
 class TestCaseNotFoundError(ApplicationError):
     pass
+
+class RetryableExecutionError(ApplicationError):
+    pass
