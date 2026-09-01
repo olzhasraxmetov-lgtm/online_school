@@ -7,7 +7,7 @@ from app.infrastructure.database.database import SessionFactory
 from app.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
 from app.infrastructure.execution.docker_code_execution_gateway import \
     DockerCodeExecutionGateway
-from app.infrastructure.execution.docker_runner import DockerRunner
+from app.infrastructure.execution.docker_runner import DockerRunner, DockerRunConfig
 from app.infrastructure.execution.execution_profile_registry import (
     ExecutionProfile,
     ExecutionProfileRegistry,
@@ -45,3 +45,7 @@ def build_code_submission_worker() -> CodeSubmissionWorker:
         queue=queue,
         process_use_case=process_use_case,
     )
+
+runner = DockerRunner(
+    config=DockerRunConfig()
+)
