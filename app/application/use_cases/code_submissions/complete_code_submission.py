@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from app.domain.entities import Progress
 from app.domain.entities.execution_result import ExecutionStatus
 
 
@@ -15,7 +16,7 @@ class CompleteCodeSubmissionCommand:
     error_message: str = ''
     exit_code: int | None = None
 
-from app.application.exceptions import CodeSubmissionNotFoundError
+from app.application.exceptions import CodeSubmissionNotFoundError, CodeTaskNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.domain.entities.execution_result import ExecutionResult
 
@@ -46,5 +47,37 @@ class CompleteCodeSubmissionUseCase:
 
             submission.apply_execution_result(result)
             await self.uow.code_submissions.update(submission)
-            await self.uow.commit()
-            return submission
+
+            if result.status.value == 'passed':
+                code_task = await self.uow.code_tasks.get_by_id(submission.code_task_id)
+                if code_task is None:
+                    raise CodeTaskNotFoundError('CodeTask not found.')
+
+                section = await self.uow.sections.get_by_id(code_task.section_id)
+                if section is None:
+                    raise CodeTaskNotFoundError('CodeTask not found.')
+
+                module = await self.uow.modules.get_by_id(section.module_id)
+                if module is None:
+                    raise CodeTaskNotFoundError('CodeTask not found.')
+
+                progress = await self.uow.progress.get_by_student_and_course(
+                    student_id=submission.student_id,
+                    course_id=module.course_id,
+                )
+
+                if progress is None:
+                    progress = Progress(
+                        id=uuid4(),
+                        student_id=submission.student_id,
+                        course_id=module.course_id,
+                    )
+                    await self.uow.progress.add(progress)
+
+                progress.complete_code_task(code_task.id, code_task.reward_points)
+                progress.sync_section_completion(section)
+                progress.sync_module_completion(module)
+                await self.uow.progress.update(progress)
+
+        await self.uow.commit()
+        return submission
