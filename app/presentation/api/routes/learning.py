@@ -2,6 +2,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
+from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase, \
+    SubmitCodeSubmissionCommand
 from app.application.use_cases.question_attempts.get_question_attempt_result import GetQuestionAttemptResultUseCase, \
     GetQuestionAttemptResultCommand
 from app.application.use_cases.question_attempts.start_question_attempt import (
@@ -9,14 +11,17 @@ from app.application.use_cases.question_attempts.start_question_attempt import (
 )
 from app.application.use_cases.question_attempts.submit_question_answer import SubmitQuestionAnswerUseCase, \
     SubmitQuestionAnswerCommand
+from app.application.use_cases.task_attempts.submit_task_answer import SubmitTaskAnswerUseCase, SubmitTaskAnswerCommand
 from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_current_user,
     get_start_question_attempt_use_case, get_submit_question_answer_use_case, get_get_question_attempt_result_use_case,
+    get_submit_code_submission_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse,
-    StartQuestionAttemptResponse, QuestionAttemptResultResponse, SubmitQuestionAnswerRequest,
+    StartQuestionAttemptResponse, QuestionAttemptResultResponse, SubmitQuestionAnswerRequest, TaskAttemptResponse,
+    SubmitTaskAnswerRequest, CodeSubmissionResponse, SubmitCodeSubmissionRequest,
 )
 
 router = APIRouter(
@@ -102,3 +107,47 @@ async def get_question_attempt_result(
         )
     )
     return QuestionAttemptResultResponse.model_validate(result)
+
+@router.post(
+    '/tasks/{task_id}/attempts',
+    response_model=TaskAttemptResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary='Submit task answer',
+    description='Creates a new task attempt and immediately applies the result.',
+)
+async def submit_task_answer(
+        task_id: UUID,
+        request: SubmitTaskAnswerRequest,
+        actor: User = Depends(get_current_user),
+        use_case: SubmitTaskAnswerUseCase = Depends(get_submit_question_answer_use_case)
+) -> TaskAttemptResponse:
+    result = await use_case.execute(
+        SubmitTaskAnswerCommand(
+            actor=actor,
+            task_id=task_id,
+            submitted_answer=request.submitted_answer,
+        )
+    )
+    return TaskAttemptResponse.model_validate(result)
+
+@router.post(
+    '/code-tasks/{code_task_id}/submissions',
+    response_model=CodeSubmissionResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary='Submit code solution',
+    description='Creates a new code submission and hands it off to asynchronous checking.',
+)
+async def submit_code_submission(
+    code_task_id: UUID,
+    request: SubmitCodeSubmissionRequest,
+    actor: User = Depends(get_current_user),
+    use_case: SubmitCodeSubmissionUseCase = Depends(get_submit_code_submission_use_case),
+) -> CodeSubmissionResponse:
+    result = await use_case.execute(
+        SubmitCodeSubmissionCommand(
+            actor=actor,
+            code_task_id=code_task_id,
+            source_code=request.source_code,
+        )
+    )
+    return CodeSubmissionResponse.model_validate(result)

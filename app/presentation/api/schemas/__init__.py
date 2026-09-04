@@ -10,6 +10,10 @@ from app.presentation.api.schemas.auth import (
     TokenResponse,
     CurrentUserResponse
 )
+from app.presentation.api.schemas.code_submissions import (
+    CodeSubmissionResponse,
+    SubmitCodeSubmissionRequest,
+)
 from app.presentation.api.schemas.code_tasks import (
     CodeTaskResponse,
     CreateCodeTaskRequest,
@@ -52,6 +56,10 @@ from app.presentation.api.schemas.question_attempts import (
     StartQuestionAttemptResponse,
     SubmitQuestionAnswerRequest,
     QuestionAttemptResultResponse
+)
+from app.presentation.api.schemas.task_attempts import (
+    SubmitTaskAnswerRequest,
+    TaskAttemptResponse,
 )
 from app.presentation.api.schemas.tasks import (
     CreateTaskRequest,
@@ -104,4 +112,8 @@ __all__ = [
     "CreateTestCaseRequest",
     "TestCaseResponse",
     "UpdateTestCaseRequest",
+    "SubmitTaskAnswerRequest",
+    "TaskAttemptResponse",
+    "CodeSubmissionResponse",
+    "SubmitCodeSubmissionRequest",
 ]
