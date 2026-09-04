@@ -2,6 +2,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
+from app.application.use_cases.code_submissions.get_code_submission import GetCodeSubmissionCommand, \
+    GetCodeSubmissionUseCase
+from app.application.use_cases.code_submissions.list_code_submissions import ListCodeSubmissionsUseCase, \
+    ListCodeSubmissionsCommand
 from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase, \
     SubmitCodeSubmissionCommand
 from app.application.use_cases.question_attempts.get_question_attempt_result import GetQuestionAttemptResultUseCase, \
@@ -16,7 +20,7 @@ from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_current_user,
     get_start_question_attempt_use_case, get_submit_question_answer_use_case, get_get_question_attempt_result_use_case,
-    get_submit_code_submission_use_case,
+    get_submit_code_submission_use_case, get_list_code_submissions_use_case, get_get_code_submission_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse,
@@ -151,3 +155,42 @@ async def submit_code_submission(
         )
     )
     return CodeSubmissionResponse.model_validate(result)
+
+@router.get(
+    '/code-submissions/{submission_id}',
+    response_model=CodeSubmissionResponse,
+    summary='Get code submission status',
+    description='Returns current status of the selected code submission.',
+)
+async def get_code_submission(
+    submission_id: UUID,
+    actor: User = Depends(get_current_user),
+    use_case: GetCodeSubmissionUseCase = Depends(get_get_code_submission_use_case),
+) -> CodeSubmissionResponse:
+    result = await use_case.execute(
+        GetCodeSubmissionCommand(
+            actor=actor,
+            submission_id=submission_id,
+        )
+    )
+    return CodeSubmissionResponse.model_validate(result)
+
+
+@router.get(
+    '/code-tasks/{code_task_id}/submissions',
+    response_model=list[CodeSubmissionResponse],
+    summary='List code submission history',
+    description='Returns submission history of the current student for the selected code task.',
+)
+async def list_code_submissions(
+    code_task_id: UUID,
+    actor: User = Depends(get_current_user),
+    use_case: ListCodeSubmissionsUseCase = Depends(get_list_code_submissions_use_case),
+) -> list[CodeSubmissionResponse]:
+    result = await use_case.execute(
+        ListCodeSubmissionsCommand(
+            actor=actor,
+            code_task_id=code_task_id,
+        )
+    )
+    return [CodeSubmissionResponse.model_validate(item) for item in result]
