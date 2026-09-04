@@ -8,6 +8,8 @@ from app.application.interfaces.services.token_service import TokenService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
+from app.application.use_cases.code_submissions.get_code_submission import GetCodeSubmissionUseCase
+from app.application.use_cases.code_submissions.list_code_submissions import ListCodeSubmissionsUseCase
 from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase
 from app.application.use_cases.code_task.create_code_task import CreateCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
@@ -284,4 +286,15 @@ def get_submit_code_submission_use_case() -> SubmitCodeSubmissionUseCase:
     return SubmitCodeSubmissionUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
         submission_queue=submission_queue,
+    )
+
+def get_get_code_submission_use_case() -> GetCodeSubmissionUseCase:
+    return GetCodeSubmissionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+
+def get_list_code_submissions_use_case() -> ListCodeSubmissionsUseCase:
+    return ListCodeSubmissionsUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
