@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
@@ -10,7 +10,7 @@ from app.domain.entities.user import User
 @dataclass(slots=True)
 class CreateTaskCommand:
     actor: User
-    section_id: int
+    section_id: UUID
     title: str
     statement: str
     position: int
