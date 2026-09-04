@@ -10,6 +10,11 @@ from app.presentation.api.schemas.auth import (
     TokenResponse,
     CurrentUserResponse
 )
+from app.presentation.api.schemas.code_tasks import (
+    CodeTaskResponse,
+    CreateCodeTaskRequest,
+    UpdateCodeTaskRequest,
+)
 from app.presentation.api.schemas.content.course import (
     CourseListItemResponse,
     CourseStructureResponse,
@@ -42,12 +47,21 @@ from app.presentation.api.schemas.question import (
     CreateQuestionRequest,
     UpdateQuestionRequest,
 )
-
 from app.presentation.api.schemas.question_attempts import (
     QuestionAttemptAnswerOptionResponse,
     StartQuestionAttemptResponse,
     SubmitQuestionAnswerRequest,
     QuestionAttemptResultResponse
+)
+from app.presentation.api.schemas.tasks import (
+    CreateTaskRequest,
+    TaskResponse,
+    UpdateTaskRequest,
+)
+from app.presentation.api.schemas.test_cases import (
+    CreateTestCaseRequest,
+    TestCaseResponse,
+    UpdateTestCaseRequest,
 )
 
 __all__ = [
@@ -80,5 +94,14 @@ __all__ = [
     "QuestionAttemptAnswerOptionResponse",
     "StartQuestionAttemptResponse",
     "SubmitQuestionAnswerRequest",
-    "QuestionAttemptResultResponse"
+    "QuestionAttemptResultResponse",
+    "CodeTaskResponse",
+    "CreateCodeTaskRequest",
+    "UpdateCodeTaskRequest",
+    "CreateTaskRequest",
+    "TaskResponse",
+    "UpdateTaskRequest",
+    "CreateTestCaseRequest",
+    "TestCaseResponse",
+    "UpdateTestCaseRequest",
 ]
