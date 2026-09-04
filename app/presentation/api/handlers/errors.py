@@ -7,7 +7,8 @@ from app.application.exceptions import (
     ModuleNotFoundError,
     SectionNotFoundError, LectureNotFoundError,
     PermissionDeniedError as ApplicationPermissionDeniedError, QuestionNotFoundError, AnswerOptionNotFoundError,
-    QuestionAttemptNotFoundError,
+    QuestionAttemptNotFoundError, TaskNotFoundError, CodeTaskNotFoundError, TestCaseNotFoundError,
+    CodeSubmissionNotFoundError,
 )
 from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
@@ -106,6 +107,46 @@ async def answer_option_not_found_handler(
         status_code=status.HTTP_404_NOT_FOUND,
     )
 
+async def task_not_found_handler(request: Request, exc: Exception) -> JSONResponse:
+    return build_error_response(
+        error='task_not_found',
+        message=str(exc),
+        status_code=status.HTTP_404_NOT_FOUND,
+    )
+
+
+async def code_task_not_found_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    return build_error_response(
+        error='code_task_not_found',
+        message=str(exc),
+        status_code=status.HTTP_404_NOT_FOUND,
+    )
+
+
+async def test_case_not_found_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    return build_error_response(
+        error='test_case_not_found',
+        message=str(exc),
+        status_code=status.HTTP_404_NOT_FOUND,
+    )
+
+
+async def code_submission_not_found_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    return build_error_response(
+        error='code_submission_not_found',
+        message=str(exc),
+        status_code=status.HTTP_404_NOT_FOUND,
+    )
+
 
 async def question_attempt_not_found_handler(
     request: Request,
@@ -136,3 +177,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(QuestionNotFoundError, question_not_found_handler)
     app.add_exception_handler(AnswerOptionNotFoundError, answer_option_not_found_handler)
     app.add_exception_handler(QuestionAttemptNotFoundError, question_attempt_not_found_handler)
+    app.add_exception_handler(TaskNotFoundError, task_not_found_handler)
+    app.add_exception_handler(CodeTaskNotFoundError, code_task_not_found_handler)
+    app.add_exception_handler(TestCaseNotFoundError, test_case_not_found_handler)
+    app.add_exception_handler(CodeSubmissionNotFoundError, code_submission_not_found_handler)
