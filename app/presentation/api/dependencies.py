@@ -8,6 +8,7 @@ from app.application.interfaces.services.token_service import TokenService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
+from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase
 from app.application.use_cases.code_task.create_code_task import CreateCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
@@ -32,12 +33,14 @@ from app.application.use_cases.question_attempts.submit_question_answer import S
 from app.application.use_cases.sections.create_section import CreateSectionUseCase
 from app.application.use_cases.sections.delete_section import DeleteSectionUseCase
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
+from app.application.use_cases.task_attempts.submit_task_answer import SubmitTaskAnswerUseCase
 from app.application.use_cases.tasks.create_task import CreateTaskUseCase
 from app.application.use_cases.tasks.update_task import UpdateTaskUseCase
 from app.application.use_cases.test_cases.create_test_case import CreateTestCaseUseCase
 from app.application.use_cases.test_cases.update_test_case import UpdateTestCaseUseCase
 from app.application.use_cases.users.auth_login import LoginUserUseCase
 from app.application.use_cases.users.register_user import RegisterUserUseCase
+from app.bootstrap.runtime_objects import submission_queue
 from app.domain.entities.user import User
 from app.infrastructure.database import SessionFactory, SqlAlchemyUnitOfWork
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -270,4 +273,15 @@ def get_create_test_case_use_case() -> CreateTestCaseUseCase:
 def get_update_test_case_use_case() -> UpdateTestCaseUseCase:
     return UpdateTestCaseUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_submit_task_answer_use_case() -> SubmitTaskAnswerUseCase:
+    return SubmitTaskAnswerUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_submit_code_submission_use_case() -> SubmitCodeSubmissionUseCase:
+    return SubmitCodeSubmissionUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+        submission_queue=submission_queue,
     )
