@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from lecture_model import LectureModel
     from task_model import TaskModel
     from question_model import QuestionModel
+    from code_task_model import CodeTaskModel
 
 class SectionModel(Base):
     __tablename__ = "sections"
@@ -40,4 +41,11 @@ class SectionModel(Base):
         back_populates='section',
         cascade='all, delete-orphan',
         order_by='TaskModel.position',
+    )
+
+    code_tasks: Mapped[list["CodeTaskModel"]] = relationship(
+        'CodeTaskModel',
+        back_populates='section',
+        cascade='all, delete-orphan',
+        order_by='CodeTaskModel.position',
     )
