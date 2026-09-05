@@ -12,6 +12,7 @@ from app.application.use_cases.code_submissions.get_code_submission import GetCo
 from app.application.use_cases.code_submissions.list_code_submissions import ListCodeSubmissionsUseCase
 from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase
 from app.application.use_cases.code_task.create_code_task import CreateCodeTaskUseCase
+from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
@@ -28,6 +29,7 @@ from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
 from app.application.use_cases.question.create_question import CreateQuestionUseCase
 from app.application.use_cases.question.delete_question import DeleteQuestionUseCase
+from app.application.use_cases.question.get_question import GetQuestionUseCase
 from app.application.use_cases.question.update_question import UpdateQuestionUseCase
 from app.application.use_cases.question_attempts.get_question_attempt_result import GetQuestionAttemptResultUseCase
 from app.application.use_cases.question_attempts.start_question_attempt import StartQuestionAttemptUseCase
@@ -37,6 +39,7 @@ from app.application.use_cases.sections.delete_section import DeleteSectionUseCa
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
 from app.application.use_cases.task_attempts.submit_task_answer import SubmitTaskAnswerUseCase
 from app.application.use_cases.tasks.create_task import CreateTaskUseCase
+from app.application.use_cases.tasks.get_task import GetTaskUseCase
 from app.application.use_cases.tasks.update_task import UpdateTaskUseCase
 from app.application.use_cases.test_cases.create_test_case import CreateTestCaseUseCase
 from app.application.use_cases.test_cases.update_test_case import UpdateTestCaseUseCase
@@ -159,9 +162,25 @@ def get_login_user_use_case() -> LoginUserUseCase:
         password_hasher=get_password_hasher(),
         token_service=get_token_service(),
     )
+def get_get_question_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetQuestionUseCase:
+    return GetQuestionUseCase(
+        question_repository=uow.questions,
+        answer_option_repository=uow.answer_options,
+    )
 
 
+def get_get_task_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetTaskUseCase:
+    return GetTaskUseCase(task_repository=uow.tasks)
 
+
+def get_get_code_task_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetCodeTaskUseCase:
+    return GetCodeTaskUseCase(code_task_repository=uow.code_tasks)
 
 http_bearer = HTTPBearer(auto_error=False)
 
