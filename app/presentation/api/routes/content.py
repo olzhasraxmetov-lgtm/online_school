@@ -2,16 +2,22 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase, GetCodeTaskQuery
 from app.application.use_cases.courses.get_course import GetCourseUseCase, GetCourseQuery
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase, GetCourseStructureQuery
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase, GetCoursesQuery
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, GetLectureQuery
+from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
+from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
 from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
+    get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case,
 )
 from app.presentation.api.schemas import (
     CourseListItemResponse, ErrorResponse,
 )
+from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
+    QuestionDetailsResponse
 from app.presentation.api.schemas.content.course import CourseResponse, CourseStructureResponse
 from app.presentation.api.schemas.content.lecture import LectureResponse
 
@@ -88,3 +94,44 @@ async def get_lecture(
 ) -> LectureResponse:
     result = await use_case.execute(GetLectureQuery(lecture_id=lecture_id))
     return LectureResponse.model_validate(result)
+
+@router.get(
+    '/questions/{question_id}',
+    response_model=QuestionDetailsResponse,
+    summary='Get question by ID',
+    description='Returns the content of a single question with public answer options.',
+)
+async def get_question(
+    question_id: UUID,
+    use_case: GetQuestionUseCase = Depends(get_get_question_use_case),
+) -> QuestionDetailsResponse:
+    result = await use_case.execute(GetQuestionQuery(question_id=question_id))
+    return QuestionDetailsResponse.model_validate(result)
+
+
+@router.get(
+    '/tasks/{task_id}',
+    response_model=TaskDetailsResponse,
+    summary='Get task by ID',
+    description='Returns the content of a single task without author check configuration.',
+)
+async def get_task(
+    task_id: UUID,
+    use_case: GetTaskUseCase = Depends(get_get_task_use_case),
+) -> TaskDetailsResponse:
+    result = await use_case.execute(GetTaskQuery(task_id=task_id))
+    return TaskDetailsResponse.model_validate(result)
+
+
+@router.get(
+    '/code-tasks/{code_task_id}',
+    response_model=CodeTaskDetailsResponse,
+    summary='Get code task by ID',
+    description='Returns the content of a single code task and its editor configuration.',
+)
+async def get_code_task(
+    code_task_id: UUID,
+    use_case: GetCodeTaskUseCase = Depends(get_get_code_task_use_case),
+) -> CodeTaskDetailsResponse:
+    result = await use_case.execute(GetCodeTaskQuery(code_task_id=code_task_id))
+    return CodeTaskDetailsResponse.model_validate(result)
