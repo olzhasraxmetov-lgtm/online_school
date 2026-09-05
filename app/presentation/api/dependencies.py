@@ -72,6 +72,8 @@ def get_get_course_structure_use_case(
         module_repository=uow.modules,
         section_repository=uow.sections,
         lecture_repository=uow.lectures,
+        task_repository=uow.tasks,
+        code_task_repository=uow.code_tasks,
     )
 
 def get_get_lecture_use_case(
