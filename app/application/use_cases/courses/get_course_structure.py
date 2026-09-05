@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from app.application.dto.course_structure import CoursesStructureDTO, ModuleStructureDTO, SectionStructureDTO, \
-    LectureStructureDTO
+    LectureStructureDTO, CodeTaskStructureDTO, TaskStructureDTO
 from app.application.exceptions import CourseNotFoundError
+from app.application.interfaces.repositories import TaskRepository, CodeTaskRepository
 from app.application.interfaces.repositories.course_repository import CourseRepository
 from app.application.interfaces.repositories.lecture_repository import LectureRepository
 from app.application.interfaces.repositories.module_repository import ModuleRepository
@@ -21,11 +22,15 @@ class GetCourseStructureUseCase:
         module_repository: ModuleRepository,
         section_repository: SectionRepository,
         lecture_repository: LectureRepository,
+        task_repository: TaskRepository,
+        code_task_repository: CodeTaskRepository,
     ) -> None:
         self.course_repository = course_repository
         self.module_repository = module_repository
         self.section_repository = section_repository
         self.lecture_repository = lecture_repository
+        self.task_repository = task_repository
+        self.code_task_repository = code_task_repository
 
     async def execute(self, query: GetCourseStructureQuery) -> CoursesStructureDTO:
         course = await self.course_repository.get_by_id(query.course_id)
@@ -41,6 +46,28 @@ class GetCourseStructureUseCase:
             section_dtos: list[SectionStructureDTO] = []
 
             for section in sorted(sections, key=lambda item: item.position):
+                tasks = await self.task_repository.get_by_ids(section.task_ids)
+                code_tasks = await self.code_task_repository.get_by_ids(section.code_task_ids)
+
+                task_dtos = [
+                    TaskStructureDTO(
+                        id=task.id,
+                        title=task.title,
+                        position=task.position,
+                    )
+                    for task in sorted(tasks, key=lambda item: item.position)
+                ]
+
+                code_task_dtos = [
+                    CodeTaskStructureDTO(
+                        id=code_task.id,
+                        title=code_task.title,
+                        position=code_task.position,
+                        language=str(code_task.language),
+                    )
+                    for code_task in sorted(code_tasks, key=lambda item: item.position)
+                ]
+
                 lectures = await self.lecture_repository.get_by_ids(section.lecture_ids)
                 lecture_dtos = [
                     LectureStructureDTO(
@@ -55,6 +82,8 @@ class GetCourseStructureUseCase:
                     title=section.title,
                     description=section.description,
                     position=section.position,
+                    tasks=task_dtos,
+                    code_tasks=code_task_dtos,
                     lectures=lecture_dtos,
                     task_ids=list(section.task_ids),
                     question_ids=list(section.question_ids),
