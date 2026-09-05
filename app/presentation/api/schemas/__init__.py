@@ -44,6 +44,10 @@ from app.presentation.api.schemas.content.section import (
     CreateSectionRequest,
     SectionResponse,
 )
+from app.presentation.api.schemas.content.task import (
+    TaskStructureResponse,
+    CodeTaskStructureResponse
+)
 from app.presentation.api.schemas.errors import ErrorResponse
 from app.presentation.api.schemas.question import (
     QuestionResponse,
@@ -116,4 +120,6 @@ __all__ = [
     "TaskAttemptResponse",
     "CodeSubmissionResponse",
     "SubmitCodeSubmissionRequest",
+    "TaskStructureResponse",
+    "CodeTaskStructureResponse"
 ]
