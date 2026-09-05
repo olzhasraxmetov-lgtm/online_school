@@ -19,6 +19,12 @@ from app.presentation.api.schemas.code_tasks import (
     CreateCodeTaskRequest,
     UpdateCodeTaskRequest,
 )
+from app.presentation.api.schemas.content.content_details import (
+    AnswerOptionDetailsResponse,
+    QuestionDetailsResponse,
+    TaskDetailsResponse,
+    CodeTaskDetailsResponse
+)
 from app.presentation.api.schemas.content.course import (
     CourseListItemResponse,
     CourseStructureResponse,
