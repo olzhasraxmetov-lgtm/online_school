@@ -3,6 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.presentation.api.schemas.content.lecture import LectureStructureResponse
+from app.presentation.api.schemas.content.task import TaskStructureResponse, CodeTaskStructureResponse
 
 
 class SectionBaseResponse(BaseModel):
@@ -17,6 +18,8 @@ class SectionBaseResponse(BaseModel):
 class SectionStructureResponse(SectionBaseResponse):
     question_ids: list[UUID]
     task_ids: list[UUID]
+    tasks: list[TaskStructureResponse]
+    code_tasks: list[CodeTaskStructureResponse]
     lectures: list[LectureStructureResponse]
 
 class SectionWriteRequest(BaseModel):
