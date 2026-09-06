@@ -78,6 +78,5 @@ class CompleteCodeSubmissionUseCase:
                 progress.sync_section_completion(section)
                 progress.sync_module_completion(module)
                 await self.uow.progress.update(progress)
-
-        await self.uow.commit()
-        return submission
+            await self.uow.commit()
+            return submission
