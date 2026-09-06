@@ -21,8 +21,8 @@ class PythonSubmissionBundleBuilder(SubmissionBundleBuilder):
         solution_path = bundle_dir / 'solution.py'
         run_path = bundle_dir / 'run.sh'
 
-        solution_path.write_text(submission.source_code, encoding='utf-8')
-        run_path.write_text(self._render_run_script(test_cases), encoding='utf-8')
+        solution_path.write_text(submission.source_code, encoding='utf-8', newline='\n')
+        run_path.write_text(self._render_run_script(test_cases), encoding='utf-8', newline='\n')
         run_path.chmod(0o755)
 
         return temp_dir, ExecutionBundle(
