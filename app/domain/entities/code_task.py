@@ -9,6 +9,7 @@ from app.domain.exceptions import InvalidCodeTaskError, CodeTaskAlreadySolvedErr
 
 class CodeTaskLanguage(StrEnum):
     PYTHON = 'python'
+    JAVA = 'java'
 
 @dataclass(slots=True)
 class CodeTask:
