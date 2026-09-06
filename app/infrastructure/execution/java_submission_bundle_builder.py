@@ -46,10 +46,10 @@ class JavaSubmissionBundleBuilder(SubmissionBundleBuilder):
             escaped_expected = self._escape_shell_string(test_case.expected_output)
 
             lines.extend([
-                f"actual_output_#{index}=$(printf '%s' '{escaped_input}' | java Main | tr -d '\\r')".replace('#', str(index)),
-                f"expected_output_#{index}=$(printf '%s' '{escaped_expected}' | tr -d '\\r')".replace('#', str(index)),
-                f"normalized_actual_#{index}=$(printf '%s' \"$actual_output_{index}\" | sed 's/[[:space:]]*$//')",
-                f"normalized_expected_#{index}=$(printf '%s' \"$expected_output_{index}\" | sed 's/[[:space:]]*$//')",
+                f"actual_output_{index}=$(printf '%s' '{escaped_input}' | java Main | tr -d '\\r')",
+                f"expected_output_{index}=$(printf '%s' '{escaped_expected}' | tr -d '\\r')",
+                f"normalized_actual_{index}=$(printf '%s' \"$actual_output_{index}\" | sed 's/[[:space:]]*$//')",
+                f"normalized_expected_{index}=$(printf '%s' \"$expected_output_{index}\" | sed 's/[[:space:]]*$//')",
                 f"if [ \"$normalized_actual_{index}\" != \"$normalized_expected_{index}\" ]; then",
                 f"  echo \"Test case {index} failed: expected '$normalized_expected_{index}', got '$normalized_actual_{index}'\" >&2",
                 '  exit 1',
