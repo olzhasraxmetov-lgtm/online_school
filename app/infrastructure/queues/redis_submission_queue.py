@@ -1,8 +1,10 @@
+import asyncio
 from uuid import UUID
 
 from redis.asyncio import Redis
 
 from app.application.interfaces.submission_queue import SubmissionQueue
+
 
 class RedisSubmissionQueue(SubmissionQueue):
     def __init__(self, client: Redis, queue_name: str) -> None:
@@ -13,9 +15,8 @@ class RedisSubmissionQueue(SubmissionQueue):
         await self.client.rpush(self.queue_name, str(submission_id))
 
     async def dequeue(self) -> UUID:
-        result =  await self.client.blpop(self.queue_name, timeout=0)
-        if result is None:
-            raise RuntimeError('Redis queue returned no message.')
-
-        _, raw_submission_id = result
-        return UUID(raw_submission_id.decode('utf-8'))
+        while True:
+            raw_submission_id = await self.client.lpop(self.queue_name)
+            if raw_submission_id is not None:
+                return UUID(raw_submission_id.decode('utf-8'))
+            await asyncio.sleep(1)
