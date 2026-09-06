@@ -21,6 +21,7 @@ from app.presentation.api.dependencies import (
     get_current_user,
     get_start_question_attempt_use_case, get_submit_question_answer_use_case, get_get_question_attempt_result_use_case,
     get_submit_code_submission_use_case, get_list_code_submissions_use_case, get_get_code_submission_use_case,
+    get_submit_task_answer_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse,
@@ -123,7 +124,7 @@ async def submit_task_answer(
         task_id: UUID,
         request: SubmitTaskAnswerRequest,
         actor: User = Depends(get_current_user),
-        use_case: SubmitTaskAnswerUseCase = Depends(get_submit_question_answer_use_case)
+        use_case: SubmitTaskAnswerUseCase = Depends(get_submit_task_answer_use_case)
 ) -> TaskAttemptResponse:
     result = await use_case.execute(
         SubmitTaskAnswerCommand(
