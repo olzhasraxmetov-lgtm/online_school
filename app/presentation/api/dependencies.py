@@ -45,7 +45,7 @@ from app.application.use_cases.test_cases.create_test_case import CreateTestCase
 from app.application.use_cases.test_cases.update_test_case import UpdateTestCaseUseCase
 from app.application.use_cases.users.auth_login import LoginUserUseCase
 from app.application.use_cases.users.register_user import RegisterUserUseCase
-from app.bootstrap.runtime_objects import submission_queue
+from app.bootstrap.build_submission_queue import build_submission_queue
 from app.domain.entities.user import User
 from app.infrastructure.database import SessionFactory, SqlAlchemyUnitOfWork
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -306,7 +306,7 @@ def get_submit_task_answer_use_case() -> SubmitTaskAnswerUseCase:
 def get_submit_code_submission_use_case() -> SubmitCodeSubmissionUseCase:
     return SubmitCodeSubmissionUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
-        submission_queue=submission_queue,
+        submission_queue=build_submission_queue(),
     )
 
 def get_get_code_submission_use_case() -> GetCodeSubmissionUseCase:
