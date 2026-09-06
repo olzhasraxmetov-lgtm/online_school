@@ -45,7 +45,7 @@ class SubmitTaskAnswerUseCase:
             )
 
             existing_attempts_count = len(student_attempts)
-            has_correct_attempt = any(attempt.is_correct for attempt in student_attempts)
+            has_correct_attempt = any(attempt.is_correct() for attempt in student_attempts)
 
             attempt = task.create_attempt(
                 student_id=command.actor.id,
