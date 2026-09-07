@@ -11,7 +11,6 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 import app.presentation.api.dependencies as api_dependencies
-from app.domain.entities.question import QuestionType
 from app.infrastructure.database.models import (
     Base,
     CourseModel,
@@ -22,6 +21,12 @@ from app.infrastructure.database.models import (
     AnswerOptionModel,
     ProgressModel,
     QuestionAttemptModel,
+    CodeSubmissionModel,
+    CodeTaskModel,
+    TaskAttemptModel,
+    TaskModel,
+    TestCaseModel,
+
 )
 from app.infrastructure.database.models import ModuleModel
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -80,7 +85,12 @@ async def clear_database(session_factory) -> None:
             SectionModel,
             ModuleModel,
             CourseModel,
-            UserModel
+            UserModel,
+            CodeTaskModel,
+            CodeSubmissionModel,
+            TaskAttemptModel,
+            TaskModel,
+            TestCaseModel,
         ]:
             await session.execute(delete(model))
         await session.commit()
@@ -130,6 +140,75 @@ async def seeded_course_tree(session_factory, seeded_admin_user):
             course_title='FastAPI course',
             lecture_content='Lecture content',
         )
+
+@pytest_asyncio.fixture
+async def seeded_tasks_tree(session_factory, seeded_author_user):
+    course_id = str(uuid4())
+    module_id = str(uuid4())
+    section_id = str(uuid4())
+    task_id = str(uuid4())
+    code_task_id = str(uuid4())
+
+    async with session_factory() as session:
+        course = CourseModel(
+            id=course_id,
+            author_id=seeded_author_user.id,
+            title='Tasks course',
+            description='Course with task activities.',
+        )
+        module = ModuleModel(
+            id=module_id,
+            course_id=course_id,
+            title='Tasks module',
+            description='Practice module.',
+            position=1,
+        )
+        section = SectionModel(
+            id=section_id,
+            module_id=module_id,
+            title='Tasks section',
+            description='Intro section.',
+            position=1,
+        )
+        task = TaskModel(
+            id=task_id,
+            section_id=section_id,
+            title='HTTP method',
+            statement='Enter GET.',
+            position=1,
+            check_type='exact_match',
+            expected_answer='GET',
+            accepted_answers=[],
+            answer_pattern='',
+            max_attempts=2,
+            reward_points=3,
+        )
+        code_task = CodeTaskModel(
+            id=code_task_id,
+            section_id=section_id,
+            title='Sum numbers',
+            statement='Read two integers and print their sum.',
+            position=2,
+            language='python',
+            starter_code='a, b = map(int, input().split())',
+            max_attempts=2,
+            reward_points=5,
+            time_limit_seconds=2,
+            memory_limit_mb=128,
+        )
+
+        session.add_all([course, module, section, task, code_task])
+        await session.commit()
+
+    return SimpleNamespace(
+        course_id=course_id,
+        module_id=module_id,
+        section_id=section_id,
+        task_id=task_id,
+        code_task_id=code_task_id,
+    )
+
+
 
 @pytest_asyncio.fixture
 async def seeded_student_user(session_factory):
