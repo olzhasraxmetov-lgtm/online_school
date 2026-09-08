@@ -33,7 +33,7 @@ router = APIRouter(
 )
 
 @router.post(
-    '/sections/{section_id}tasks',
+    '/sections/{section_id}/tasks',
     response_model=TaskResponse,
     status_code=status.HTTP_201_CREATED,
     summary='Create a new task',
