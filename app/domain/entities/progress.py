@@ -84,7 +84,7 @@ class Progress:
         if attempt.student_id != self.student_id:
             raise InvalidProgressError("Task attempt does not belong to this student.")
 
-        if not attempt.is_correct:
+        if not attempt.is_correct():
             return False
 
         already_completed = self.has_completed_task(attempt.task_id)
