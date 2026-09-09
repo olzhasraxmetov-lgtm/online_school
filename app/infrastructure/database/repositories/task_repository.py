@@ -32,6 +32,13 @@ class SqlAlchemyTaskRepository(TaskRepository):
         self.session.add(TaskMapper.to_model(task))
         await self.session.flush()
 
+    async def remove(self, task_id: UUID) -> None:
+        model = await self.session.get(TaskModel, str(task_id))
+        if model is None:
+            return
+        await self.session.delete(model)
+        await self.session.flush()
+
     async def update(self, task: Task) -> None:
         model = await self.session.get(TaskModel, str(task.id))
         if model is None:
