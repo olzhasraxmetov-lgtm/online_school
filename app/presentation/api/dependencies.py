@@ -39,6 +39,7 @@ from app.application.use_cases.sections.delete_section import DeleteSectionUseCa
 from app.application.use_cases.sections.update_section import UpdateSectionUseCase
 from app.application.use_cases.task_attempts.submit_task_answer import SubmitTaskAnswerUseCase
 from app.application.use_cases.tasks.create_task import CreateTaskUseCase
+from app.application.use_cases.tasks.delete_task import DeleteTaskUseCase
 from app.application.use_cases.tasks.get_task import GetTaskUseCase
 from app.application.use_cases.tasks.update_task import UpdateTaskUseCase
 from app.application.use_cases.test_cases.create_test_case import CreateTestCaseUseCase
@@ -176,6 +177,10 @@ def get_get_task_use_case(
 ) -> GetTaskUseCase:
     return GetTaskUseCase(task_repository=uow.tasks)
 
+def get_delete_task_use_case() -> DeleteTaskUseCase:
+    return DeleteTaskUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
 
 def get_get_code_task_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
