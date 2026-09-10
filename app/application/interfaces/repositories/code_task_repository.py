@@ -20,3 +20,7 @@ class CodeTaskRepository(ABC):
     @abstractmethod
     async def get_by_ids(self, code_task_ids: list[UUID]) -> list[CodeTask]:
         raise NotImplementedError
+
+    @abstractmethod
+    async def remove(self, code_task_id: UUID) -> None:
+        raise NotImplementedError
