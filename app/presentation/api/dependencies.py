@@ -12,6 +12,7 @@ from app.application.use_cases.code_submissions.get_code_submission import GetCo
 from app.application.use_cases.code_submissions.list_code_submissions import ListCodeSubmissionsUseCase
 from app.application.use_cases.code_submissions.submit_code_submission import SubmitCodeSubmissionUseCase
 from app.application.use_cases.code_task.create_code_task import CreateCodeTaskUseCase
+from app.application.use_cases.code_task.delete_code_task import DeleteCodeTaskUseCase
 from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
@@ -179,6 +180,11 @@ def get_get_task_use_case(
 
 def get_delete_task_use_case() -> DeleteTaskUseCase:
     return DeleteTaskUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_code_task_use_case() -> DeleteCodeTaskUseCase:
+    return DeleteCodeTaskUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
