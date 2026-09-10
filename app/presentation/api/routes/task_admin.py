@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.application.use_cases.code_task.create_code_task import CreateCodeTaskCommand, CreateCodeTaskUseCase
+from app.application.use_cases.code_task.delete_code_task import DeleteCodeTaskUseCase, DeleteCodeTaskCommand
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase, UpdateCodeTaskCommand
 from app.application.use_cases.tasks.create_task import CreateTaskUseCase, CreateTaskCommand
 from app.application.use_cases.tasks.delete_task import DeleteTaskUseCase, DeleteTaskCommand
@@ -13,7 +14,8 @@ from app.application.use_cases.test_cases.update_test_case import UpdateTestCase
 from app.domain.entities import User
 from app.presentation.api.dependencies import get_create_task_use_case, get_current_author_or_admin, \
     get_update_task_use_case, get_update_test_case_use_case, get_create_test_case_use_case, \
-    get_update_code_task_use_case, get_create_code_task_use_case, get_delete_task_use_case
+    get_update_code_task_use_case, get_create_code_task_use_case, get_delete_task_use_case, \
+    get_delete_code_task_use_case
 from app.presentation.api.schemas import ErrorResponse, TaskResponse, CreateTaskRequest, UpdateTaskRequest, \
     TestCaseResponse, UpdateTestCaseRequest, CreateTestCaseRequest, CodeTaskResponse, UpdateCodeTaskRequest, \
     CreateCodeTaskRequest
@@ -161,6 +163,18 @@ async def update_code_task(
     )
     return CodeTaskResponse.model_validate(result)
 
+@router.delete(
+    '/code-tasks/{code_task_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete code task',
+    description='Delete code task in existed section by its id'
+)
+async def delete_code_task(
+    code_task_id: UUID,
+    actor: User = Depends(get_current_author_or_admin),
+    use_case: DeleteCodeTaskUseCase = Depends(get_delete_code_task_use_case),
+):
+    return await use_case.execute(DeleteCodeTaskCommand(code_task_id=code_task_id, actor=actor))
 
 @router.post(
     '/code-tasks/{code_task_id}/test-cases',
