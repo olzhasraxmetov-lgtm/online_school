@@ -32,6 +32,13 @@ class SqlAlchemyCodeTaskRepository(CodeTaskRepository):
         model = await self.session.get(CodeTaskModel, str(code_task_id))
         return None if model is None else CodeTaskMapper.to_domain(model)
 
+    async def remove(self, code_task_id: UUID) -> None:
+        model = await self.session.get(CodeTaskModel, str(code_task_id))
+        if model is None:
+            return
+        await self.session.delete(model)
+        await self.session.flush()
+
     async def update(self, code_task: CodeTask) -> None:
         model = await self.session.get(CodeTaskModel, str(code_task.id))
         if model is None:
