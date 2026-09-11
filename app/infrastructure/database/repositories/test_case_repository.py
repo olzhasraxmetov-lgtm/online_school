@@ -21,6 +21,13 @@ class SqlAlchemyTestCaseRepository(TestCaseRepository):
         model = await self.session.get(TestCaseModel, str(test_case_id))
         return None if model is None else TestCaseMapper.to_domain(model)
 
+    async def remove(self, test_case_id: UUID) -> None:
+        model = await self.session.get(TestCaseModel, str(test_case_id))
+        if model is None:
+            return
+        await self.session.delete(model)
+        await self.session.flush()
+
     async def update(self, test_case: TestCase) -> None:
         model = await self.session.get(TestCaseModel, str(test_case.id))
         if model is None:
