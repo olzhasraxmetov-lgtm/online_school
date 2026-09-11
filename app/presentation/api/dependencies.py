@@ -44,6 +44,7 @@ from app.application.use_cases.tasks.delete_task import DeleteTaskUseCase
 from app.application.use_cases.tasks.get_task import GetTaskUseCase
 from app.application.use_cases.tasks.update_task import UpdateTaskUseCase
 from app.application.use_cases.test_cases.create_test_case import CreateTestCaseUseCase
+from app.application.use_cases.test_cases.delete_test_case import DeleteTestCaseUseCase
 from app.application.use_cases.test_cases.update_test_case import UpdateTestCaseUseCase
 from app.application.use_cases.users.auth_login import LoginUserUseCase
 from app.application.use_cases.users.register_user import RegisterUserUseCase
@@ -185,6 +186,11 @@ def get_delete_task_use_case() -> DeleteTaskUseCase:
 
 def get_delete_code_task_use_case() -> DeleteCodeTaskUseCase:
     return DeleteCodeTaskUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_delete_test_case_use_case() -> DeleteTestCaseUseCase:
+    return DeleteTestCaseUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
