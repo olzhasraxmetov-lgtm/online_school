@@ -123,6 +123,10 @@ class CodeTask:
     def has_test_cases(self) -> bool:
         return bool(self.test_case_ids)
 
+    def ensure_has_test_cases(self) -> None:
+        if not self.has_test_cases():
+            raise InvalidCodeTaskError('Code task must have at least one test case.')
+
     def requires_external_check(self) -> bool:
         return True
 
