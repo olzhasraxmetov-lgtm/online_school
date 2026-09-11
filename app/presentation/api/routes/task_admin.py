@@ -10,12 +10,13 @@ from app.application.use_cases.tasks.create_task import CreateTaskUseCase, Creat
 from app.application.use_cases.tasks.delete_task import DeleteTaskUseCase, DeleteTaskCommand
 from app.application.use_cases.tasks.update_task import UpdateTaskUseCase, UpdateTaskCommand
 from app.application.use_cases.test_cases.create_test_case import CreateTestCaseUseCase, CreateTestCaseCommand
+from app.application.use_cases.test_cases.delete_test_case import DeleteTestCaseUseCase, DeleteTestCaseCommand
 from app.application.use_cases.test_cases.update_test_case import UpdateTestCaseUseCase, UpdateTestCaseCommand
 from app.domain.entities import User
 from app.presentation.api.dependencies import get_create_task_use_case, get_current_author_or_admin, \
     get_update_task_use_case, get_update_test_case_use_case, get_create_test_case_use_case, \
     get_update_code_task_use_case, get_create_code_task_use_case, get_delete_task_use_case, \
-    get_delete_code_task_use_case
+    get_delete_code_task_use_case, get_delete_test_case_use_case
 from app.presentation.api.schemas import ErrorResponse, TaskResponse, CreateTaskRequest, UpdateTaskRequest, \
     TestCaseResponse, UpdateTestCaseRequest, CreateTestCaseRequest, CodeTaskResponse, UpdateCodeTaskRequest, \
     CreateCodeTaskRequest
@@ -225,3 +226,16 @@ async def update_test_case(
         )
     )
     return TestCaseResponse.model_validate(result)
+
+@router.delete(
+    '/test-cases/{test_case_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Update test case',
+    description='Delete test case in existed section by its id'
+)
+async def delete_test_case(
+    test_case_id: UUID,
+    actor: User = Depends(get_current_author_or_admin),
+    use_case: DeleteTestCaseUseCase = Depends(get_delete_test_case_use_case),
+):
+    return await use_case.execute(DeleteTestCaseCommand(test_case_id=test_case_id, actor=actor))
