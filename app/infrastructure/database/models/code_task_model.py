@@ -7,6 +7,7 @@ from app.infrastructure.database.models.base import Base
 
 if TYPE_CHECKING:
     from section_model import  SectionModel
+    from test_case_model import  TestCaseModel
 
 class CodeTaskModel(Base):
     __tablename__ = 'code_tasks'
@@ -28,3 +29,9 @@ class CodeTaskModel(Base):
     memory_limit_mb: Mapped[int] = mapped_column(Integer, nullable=False)
 
     section: Mapped['SectionModel'] = relationship('SectionModel', back_populates='code_tasks')
+    test_cases: Mapped[list['TestCaseModel']] = relationship(
+        'TestCaseModel',
+        back_populates='code_task',
+        cascade='all, delete-orphan',
+        order_by='TestCaseModel.id',
+    )

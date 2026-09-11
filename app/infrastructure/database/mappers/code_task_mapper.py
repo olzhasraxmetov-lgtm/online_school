@@ -19,6 +19,7 @@ class CodeTaskMapper:
             reward_points=model.reward_points,
             time_limit_seconds=model.time_limit_seconds,
             memory_limit_mb=model.memory_limit_mb,
+            test_case_ids=[UUID(tc.id) for tc in model.test_cases]
         )
 
     @staticmethod

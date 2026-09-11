@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.application.interfaces.repositories.code_task_repository import CodeTaskRepository
 from app.domain.entities.code_task import CodeTask
@@ -21,15 +22,23 @@ class SqlAlchemyCodeTaskRepository(CodeTaskRepository):
         if not code_task_ids:
             return []
 
-        stmt = select(CodeTaskModel).where(
-            CodeTaskModel.id.in_([str(code_task_id) for code_task_id in code_task_ids])
-        )
+        stmt = select(CodeTaskModel).options(
+            selectinload(CodeTaskModel.test_cases)
+        ).where(
+                CodeTaskModel.id.in_([str(code_task_id) for code_task_id in code_task_ids])
+            )
         result = await self.session.execute(stmt)
         models = result.scalars().all()
         return [CodeTaskMapper.to_domain(model) for model in models]
 
     async def get_by_id(self, code_task_id: UUID) -> CodeTask:
-        model = await self.session.get(CodeTaskModel, str(code_task_id))
+        stmt = (
+            select(CodeTaskModel)
+            .options(selectinload(CodeTaskModel.test_cases))
+            .where(CodeTaskModel.id == str(code_task_id))
+        )
+        result = await self.session.execute(stmt)
+        model = result.scalar_one_or_none()
         return None if model is None else CodeTaskMapper.to_domain(model)
 
     async def remove(self, code_task_id: UUID) -> None:
