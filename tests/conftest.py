@@ -1,5 +1,6 @@
 import os
 from collections.abc import AsyncIterator
+from datetime import datetime, UTC
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
@@ -140,6 +141,27 @@ async def seeded_course_tree(session_factory, seeded_admin_user):
             course_title='FastAPI course',
             lecture_content='Lecture content',
         )
+
+@pytest_asyncio.fixture
+async def seeded_code_submission(session_factory, seeded_tasks_tree, seeded_student_user):
+    code_submission_id = str(uuid4())
+    code_submission = CodeSubmissionModel(
+        id=code_submission_id,
+        student_id=seeded_student_user.id,
+        code_task_id=seeded_tasks_tree.code_task_id,
+        source_code="a, b = map(int, input().split())\nprint(a + b)",
+        attempt_number=1,
+        status='pending',
+        created_at=datetime.now(UTC)
+    )
+
+    async with session_factory() as session:
+        session.add(code_submission)
+        await session.commit()
+
+    return SimpleNamespace(
+        code_submission_id=code_submission_id,
+    )
 
 @pytest_asyncio.fixture
 async def seeded_tasks_tree(session_factory, seeded_author_user):
