@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.application.exceptions import TaskNotFoundError, TaskAlreadyUsedError, SectionNotFoundError
+from app.application.exceptions import TaskNotFoundError, TaskAlreadyUsedError
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities import User
@@ -23,7 +23,7 @@ class DeleteTaskUseCase:
             if task is None:
                 raise TaskNotFoundError('Task not found.')
 
-            await self.course_access_service.ensure_can_manage_section(
+            section = await self.course_access_service.ensure_can_manage_section(
                 actor=command.actor,
                 section_id=task.section_id,
             )
@@ -34,10 +34,6 @@ class DeleteTaskUseCase:
                 raise TaskAlreadyUsedError(
                     'Task already has student attempts and cannot be deleted safely.'
                 )
-
-            section = await self.uow.sections.get_by_id(task.section_id)
-            if section is None:
-                raise SectionNotFoundError('Section not found.')
 
             section.remove_task(task.id)
             await self.uow.sections.update(section)
