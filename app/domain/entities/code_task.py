@@ -58,6 +58,12 @@ class CodeTask:
         self.starter_code = starter_code
         self._validate()
 
+    def ensure_can_be_deleted(self, has_submission: bool) -> None:
+        if has_submission:
+            raise InvalidCodeTaskError(
+                'CodeTask cannot be deleted after submission.'
+            )
+
     def ensure_execution_policy_can_be_changed(self, has_submission: bool) -> None:
         if has_submission:
             raise InvalidCodeTaskError(
