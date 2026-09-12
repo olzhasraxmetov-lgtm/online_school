@@ -5,6 +5,7 @@ from app.application.exceptions import CodeTaskNotFoundError, CodeTaskAlreadyUse
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities import User
+from app.domain.exceptions import InvalidCodeTaskError
 
 
 @dataclass(slots=True)
@@ -31,10 +32,10 @@ class DeleteCodeTaskUseCase:
 
             has_submissions = await self.uow.code_submissions.exists_by_code_task_id(code_task.id)
 
-            if has_submissions:
-                raise CodeTaskAlreadyUsedError(
-                    'Code task already has student submissions and cannot be deleted safely.'
-                )
+            try:
+                code_task.ensure_can_be_deleted(has_submissions)
+            except InvalidCodeTaskError as exc:
+                raise CodeTaskAlreadyUsedError(str(exc)) from exc
 
             section.remove_code_task(code_task.id)
             await self.uow.code_tasks.remove(code_task.id)
