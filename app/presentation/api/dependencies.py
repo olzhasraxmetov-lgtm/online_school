@@ -1,10 +1,11 @@
 from collections.abc import AsyncIterator
 
-from fastapi import Depends
+from fastapi import Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
+from app.application.services.course_content_access_service import CourseContentAccessService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
@@ -15,11 +16,13 @@ from app.application.use_cases.code_task.create_code_task import CreateCodeTaskU
 from app.application.use_cases.code_task.delete_code_task import DeleteCodeTaskUseCase
 from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
+from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
 from app.application.use_cases.courses.get_course import GetCourseUseCase
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
+from app.application.use_cases.courses.publish_course import PublishCourseUseCase
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase
 from app.application.use_cases.lectures.create_lecture import CreateLectureUseCase
 from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase
@@ -56,6 +59,8 @@ from app.infrastructure.security.token_service import JwtTokenService, InvalidTo
 from app.presentation.execeptions import AuthenticationError, PermissionDeniedError
 
 
+http_bearer = HTTPBearer(auto_error=False)
+
 async def get_uow() -> AsyncIterator[SqlAlchemyUnitOfWork]:
     async with SqlAlchemyUnitOfWork(session_factory=SessionFactory) as uow:
         yield uow
@@ -68,7 +73,14 @@ def get_get_courses_use_case(
 def get_get_course_use_case(
     uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetCourseUseCase:
-    return GetCourseUseCase(course_repository=uow.courses)
+    return GetCourseUseCase(
+        course_repository=uow.courses,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
+    )
 
 def get_get_course_structure_use_case(
     uow: SqlAlchemyUnitOfWork = Depends(get_uow),
@@ -80,12 +92,35 @@ def get_get_course_structure_use_case(
         lecture_repository=uow.lectures,
         task_repository=uow.tasks,
         code_task_repository=uow.code_tasks,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
+    )
+
+def get_publish_course_use_case() -> PublishCourseUseCase:
+    return PublishCourseUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+
+def get_archive_course_use_case() -> ArchiveCourseUseCase:
+    return ArchiveCourseUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
 def get_get_lecture_use_case(
     uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetLectureUseCase:
-    return GetLectureUseCase(lecture_repository=uow.lectures)
+    return GetLectureUseCase(
+        lecture_repository=uow.lectures,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
+    )
 
 def get_create_course_use_case() -> CreateCourseUseCase:
     return CreateCourseUseCase(
@@ -159,6 +194,29 @@ def get_register_user_use_case() -> RegisterUserUseCase:
         password_hasher=get_password_hasher(),
     )
 
+async def get_current_user_or_none(
+        credentials: HTTPAuthorizationCredentials | None = Security(http_bearer),
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+        token_service: TokenService = Depends(get_token_service)
+) -> User | None:
+    if credentials is None:
+        return None
+
+    if credentials.scheme.lower() != 'bearer':
+        raise AuthenticationError('Authentication scheme must be Bearer.')
+
+    try:
+        user_id = token_service.get_user_id(credentials.credentials)
+    except InvalidTokenError as exc:
+        raise AuthenticationError(str(exc)) from exc
+
+    user = await uow.users.get_by_id(user_id)
+    if user is None:
+        raise AuthenticationError('User from token was not found.')
+
+    return user
+
+
 def get_login_user_use_case() -> LoginUserUseCase:
     return LoginUserUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
@@ -171,13 +229,25 @@ def get_get_question_use_case(
     return GetQuestionUseCase(
         question_repository=uow.questions,
         answer_option_repository=uow.answer_options,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
     )
 
 
 def get_get_task_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetTaskUseCase:
-    return GetTaskUseCase(task_repository=uow.tasks)
+    return GetTaskUseCase(
+        task_repository=uow.tasks,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
+    )
 
 def get_delete_task_use_case() -> DeleteTaskUseCase:
     return DeleteTaskUseCase(
@@ -197,9 +267,16 @@ def get_delete_test_case_use_case() -> DeleteTestCaseUseCase:
 def get_get_code_task_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetCodeTaskUseCase:
-    return GetCodeTaskUseCase(code_task_repository=uow.code_tasks)
+    return GetCodeTaskUseCase(
+        code_task_repository=uow.code_tasks,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        ),
+    )
 
-http_bearer = HTTPBearer(auto_error=False)
+
 
 async def get_current_user(
         credentials: HTTPAuthorizationCredentials | None = Depends(http_bearer),
