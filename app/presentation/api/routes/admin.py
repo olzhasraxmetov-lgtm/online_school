@@ -3,8 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from starlette import status
 
+from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase, ArchiveCourseCommand
 from app.application.use_cases.courses.create_course import CreateCourseUseCase, CreateCourseCommand
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase, DeleteCourseCommand
+from app.application.use_cases.courses.publish_course import PublishCourseUseCase, PublishCourseCommand
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase, UpdateCourseCommand
 from app.application.use_cases.lectures.create_lecture import CreateLectureCommand, CreateLectureUseCase
 from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase, DeleteLectureCommand
@@ -28,7 +30,7 @@ from app.presentation.api.dependencies import (
     get_delete_course_use_case,
     get_delete_module_use_case,
     get_delete_section_use_case,
-    get_delete_lecture_use_case, get_current_author_or_admin
+    get_delete_lecture_use_case, get_current_author_or_admin, get_publish_course_use_case, get_archive_course_use_case
 )
 from app.presentation.api.schemas import ErrorResponse
 from app.presentation.api.schemas.content.course import (
@@ -424,3 +426,61 @@ async def delete_lecture(
         use_case: DeleteLectureUseCase = Depends(get_delete_lecture_use_case)
 ):
     await use_case.execute(DeleteLectureCommand(actor=actor,lecture_id=lecture_id))
+
+@router.post(
+    '/courses/{course_id}/publish',
+    response_model=CourseResponse,
+    summary='Publish course',
+    description='Makes the course publicly visible for students.',
+    responses={
+        400: {
+            'description': 'Domain or application validation error.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Course was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def publish_course(
+        course_id: UUID,
+        actor: User = Depends(get_current_author_or_admin),
+        use_case: PublishCourseUseCase = Depends(get_publish_course_use_case)
+) -> CourseResponse:
+    result = await use_case.execute(
+        PublishCourseCommand(
+            actor=actor,
+            course_id=course_id,
+        )
+    )
+    return CourseResponse.model_validate(result)
+
+@router.post(
+    '/courses/{course_id}/archive',
+    response_model=CourseResponse,
+    summary='Archive course',
+    description='Removes the course from public visibility without deleting it.',
+    responses={
+        400: {
+            'description': 'Domain or application validation error.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Course was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def archive_course(
+    course_id: UUID,
+    actor: User = Depends(get_current_author_or_admin),
+    use_case: ArchiveCourseUseCase = Depends(get_archive_course_use_case),
+) -> CourseResponse:
+    result = await use_case.execute(
+        ArchiveCourseCommand(
+            actor=actor,
+            course_id=course_id,
+        )
+    )
+    return CourseResponse.model_validate(result)
