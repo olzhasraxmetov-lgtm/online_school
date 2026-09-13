@@ -84,3 +84,6 @@ class InvalidTestCaseError(DomainError):
 
 class InvalidExecutionResultError(DomainError):
     pass
+
+class InvalidCourseStatusTransitionError(DomainError):
+    pass
