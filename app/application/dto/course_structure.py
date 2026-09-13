@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from app.domain.entities.course import CourseStatus
+
+
 @dataclass(slots=True)
 class TaskStructureDTO:
     id: UUID
@@ -46,4 +49,5 @@ class CoursesStructureDTO:
     id: UUID
     title: str
     description: str
+    status: CourseStatus
     modules: list[ModuleStructureDTO] = field(default_factory=list)

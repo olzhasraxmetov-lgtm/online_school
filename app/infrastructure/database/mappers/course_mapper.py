@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from app.domain.entities.course import Course
+from app.domain.entities.course import Course, CourseStatus
 from app.infrastructure.database.models import CourseModel
 
 
@@ -12,6 +12,7 @@ class CourseMapper:
             author_id=UUID(model.author_id),
             title=model.title,
             description=model.description,
+            status=CourseStatus(model.status),
             module_ids=[UUID(module.id) for module in sorted(model.modules, key=lambda x: x.position)]
         )
 
@@ -22,4 +23,5 @@ class CourseMapper:
             author_id=str(entity.author_id),
             title=entity.title,
             description=entity.description,
+            status=str(entity.status),
         )

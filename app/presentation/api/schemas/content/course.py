@@ -2,6 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domain.entities.course import CourseStatus
 from app.presentation.api.schemas.content.module import ModuleStructureResponse
 
 
@@ -11,6 +12,7 @@ class CourseBaseResponse(BaseModel):
    id: UUID
    title: str
    description: str
+   status: CourseStatus
 
 class CourseListItemResponse(CourseBaseResponse):
    pass

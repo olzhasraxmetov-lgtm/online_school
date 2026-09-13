@@ -19,6 +19,7 @@ class CourseModel(Base):
     )
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String(32), default='draft', index=True)
 
     author: Mapped['UserModel'] = relationship(
         'UserModel',
