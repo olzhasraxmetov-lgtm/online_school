@@ -26,8 +26,10 @@ async def test_ensure_task_not_in_course_structure_after_deleting(
     )
     assert response.status_code == 201
 
+    created_task_id = response.json()["id"]
+
     delete_response = await client.delete(
-        f'/api/admin/tasks/{seeded_tasks_tree.task_id}',
+        f'/api/admin/tasks/{created_task_id}',
         headers=admin_auth_headers,
     )
 
@@ -39,11 +41,53 @@ async def test_ensure_task_not_in_course_structure_after_deleting(
 
     section = response_structure.json()['modules'][0]['sections']
 
-    assert seeded_tasks_tree.task_id not in section[0]['task_ids']
-    assert all(item['id'] != seeded_tasks_tree.task_id for item in section[0]['tasks'])
+    assert created_task_id not in section[0]['task_ids']
+    assert all(item['id'] != created_task_id for item in section[0]['tasks'])
+
 
 @pytest.mark.asyncio
-async def test_author_cannot_delete_task_with_code_submission(
+async def test_ensure_code_task_not_in_course_structure_after_deleting(
+        client,
+        author_auth_headers,
+        seeded_tasks_tree
+):
+    response = await client.post(
+        f'/api/admin/sections/{seeded_tasks_tree.section_id}/code-tasks',
+        headers=author_auth_headers,
+        json={
+              "title": "Сумма двух чисел",
+              "statement": "Напишите программу, которая считывает два целых числа и выводит их сумму.",
+              "position": 3,
+              "language": "python",
+              "starter_code": "a, b = map(int, input().split())\n# ваш код здесь",
+              "max_attempts": 2,
+              "reward_points": 5,
+              "time_limit_seconds": 10,
+              "memory_limit_mb": 128
+        }
+    )
+    assert response.status_code == 201
+
+    created_code_task_id = response.json()["id"]
+
+    delete_response = await client.delete(
+        f'/api/admin/code-tasks/{created_code_task_id}',
+        headers=author_auth_headers,
+    )
+
+    assert delete_response.status_code == 204
+
+    response_structure = await client.get(
+        f'/api/courses/{seeded_tasks_tree.course_id}/structure',
+    )
+
+    section = response_structure.json()['modules'][0]['sections']
+
+    assert created_code_task_id not in section[0]['code_tasks'][0]
+    assert all(item['id'] != created_code_task_id for item in section[0]['code_tasks'])
+
+@pytest.mark.asyncio
+async def test_author_cannot_delete_code_task_with_code_submission(
         client,
         admin_auth_headers,
         seeded_code_submission,
@@ -147,6 +191,51 @@ async def test_author_cannot_delete_test_case_when_it_has_submission(
     assert delete_test_case.json()['error'] == 'application_error'
 
 @pytest.mark.asyncio
+async def test_author_cannot_delete_task_when_it_has_attempt(
+        client,
+        seeded_tasks_tree,
+        author_auth_headers,
+        seeded_code_submission,
+        student_auth_headers,
+):
+    response = await client.post(
+        f'/api/admin/sections/{seeded_tasks_tree.section_id}/tasks',
+        headers=author_auth_headers,
+        json={
+            "title": "HTTP-метод для чтения",
+             "statement": "Введите HTTP-метод, который обычно используют для чтения ресурса.",
+             "position": 3,
+             "check_type": "exact_match",
+             "expected_answer": "GET",
+             "accepted_answers": [],
+             "answer_pattern": "",
+             "max_attempts": 2,
+             "reward_points": 3
+        }
+    )
+    assert response.status_code == 201
+
+    task_id = response.json()['id']
+
+    task_attempt_response = await client.post(
+        f'/api/learning/tasks/{task_id}/attempts',
+        headers=student_auth_headers,
+        json={
+            'submitted_answer': 'GET'
+        }
+    )
+
+    assert task_attempt_response.status_code == 201
+
+    delete_task_response = await client.delete(
+        f'/api/admin/tasks/{task_id}',
+        headers=author_auth_headers,
+    )
+
+    assert delete_task_response.status_code == 400
+    assert delete_task_response.json()['error'] == 'application_error'
+
+@pytest.mark.asyncio
 async def test_returns_404_when_code_task_is_missing(
         client,
         author_auth_headers,
@@ -169,3 +258,17 @@ async def test_returns_404_when_test_case_is_missing(
     )
 
     assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_other_author_cannot_delete_foreign_code_task(
+        client,
+        seeded_tasks_tree,
+        other_author_auth_headers,
+):
+    response = await client.delete(
+        f'/api/admin/code-tasks/{seeded_tasks_tree.code_task_id}',
+        headers=other_author_auth_headers,
+    )
+
+    assert response.status_code == 403
+    assert response.json()['error'] == 'permission_denied'
