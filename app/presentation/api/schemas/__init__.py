@@ -54,6 +54,11 @@ from app.presentation.api.schemas.content.task import (
     TaskStructureResponse,
     CodeTaskStructureResponse
 )
+from app.presentation.api.schemas.course_publication import (
+    CoursePublicationReadinessResponse,
+    CoursePublicationErrorResponse,
+    CoursePublicationIssueResponse
+)
 from app.presentation.api.schemas.errors import ErrorResponse
 from app.presentation.api.schemas.question import (
     QuestionResponse,
@@ -127,5 +132,8 @@ __all__ = [
     "CodeSubmissionResponse",
     "SubmitCodeSubmissionRequest",
     "TaskStructureResponse",
-    "CodeTaskStructureResponse"
+    "CodeTaskStructureResponse",
+    "CoursePublicationReadinessResponse",
+    "CoursePublicationErrorResponse",
+    "CoursePublicationIssueResponse"
 ]
