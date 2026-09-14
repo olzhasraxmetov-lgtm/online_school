@@ -20,6 +20,7 @@ from app.application.use_cases.courses.archive_course import ArchiveCourseUseCas
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
 from app.application.use_cases.courses.get_course import GetCourseUseCase
+from app.application.use_cases.courses.get_course_publication_readiness import GetCoursePublicationReadinessUseCase
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
 from app.application.use_cases.courses.publish_course import PublishCourseUseCase
@@ -58,7 +59,6 @@ from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
 from app.infrastructure.security.token_service import JwtTokenService, InvalidTokenError
 from app.presentation.execeptions import AuthenticationError, PermissionDeniedError
 
-
 http_bearer = HTTPBearer(auto_error=False)
 
 async def get_uow() -> AsyncIterator[SqlAlchemyUnitOfWork]:
@@ -80,6 +80,11 @@ def get_get_course_use_case(
             module_repository=uow.modules,
             section_repository=uow.sections,
         ),
+    )
+
+def get_get_course_publication_readiness_use_case() -> GetCoursePublicationReadinessUseCase:
+    return GetCoursePublicationReadinessUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
 def get_get_course_structure_use_case(
