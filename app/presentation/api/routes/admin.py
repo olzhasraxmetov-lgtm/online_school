@@ -6,6 +6,8 @@ from starlette import status
 from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase, ArchiveCourseCommand
 from app.application.use_cases.courses.create_course import CreateCourseUseCase, CreateCourseCommand
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase, DeleteCourseCommand
+from app.application.use_cases.courses.get_course_publication_readiness import GetCoursePublicationReadinessUseCase, \
+    GetCoursePublicationReadinessQuery
 from app.application.use_cases.courses.publish_course import PublishCourseUseCase, PublishCourseCommand
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase, UpdateCourseCommand
 from app.application.use_cases.lectures.create_lecture import CreateLectureCommand, CreateLectureUseCase
@@ -30,9 +32,11 @@ from app.presentation.api.dependencies import (
     get_delete_course_use_case,
     get_delete_module_use_case,
     get_delete_section_use_case,
-    get_delete_lecture_use_case, get_current_author_or_admin, get_publish_course_use_case, get_archive_course_use_case
+    get_delete_lecture_use_case, get_current_author_or_admin, get_publish_course_use_case, get_archive_course_use_case,
+    get_get_course_publication_readiness_use_case
 )
-from app.presentation.api.schemas import ErrorResponse
+from app.presentation.api.schemas import ErrorResponse, CoursePublicationReadinessResponse, \
+    CoursePublicationErrorResponse
 from app.presentation.api.schemas.content.course import (
     CourseResponse,
     CreateCourseRequest,
@@ -434,8 +438,8 @@ async def delete_lecture(
     description='Makes the course publicly visible for students.',
     responses={
         400: {
-            'description': 'Domain or application validation error.',
-            'model': ErrorResponse,
+            'description': 'Course is not ready for publication.',
+            'model': CoursePublicationErrorResponse,
         },
         404: {
             'description': 'Course was not found.',
@@ -484,3 +488,30 @@ async def archive_course(
         )
     )
     return CourseResponse.model_validate(result)
+
+@router.get(
+    '/courses/{course_id}/publication-readiness',
+    response_model=CoursePublicationReadinessResponse,
+    summary='Get course publication readiness',
+    description='Returns diagnostics that explain whether the course can be published.',
+    responses={
+        404: {
+            'description': 'Course was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_course_publication_readiness(
+        course_id: UUID,
+        actor: User = Depends(get_current_author_or_admin),
+        use_case: GetCoursePublicationReadinessUseCase = Depends(
+            get_get_course_publication_readiness_use_case
+        )
+) -> CoursePublicationReadinessResponse:
+    result = await use_case.execute(
+        GetCoursePublicationReadinessQuery(
+            actor=actor,
+            course_id=course_id,
+        )
+    )
+    return CoursePublicationReadinessResponse.model_validate(result)
