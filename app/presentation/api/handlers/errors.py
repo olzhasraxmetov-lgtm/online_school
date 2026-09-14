@@ -8,10 +8,14 @@ from app.application.exceptions import (
     SectionNotFoundError, LectureNotFoundError,
     PermissionDeniedError as ApplicationPermissionDeniedError, QuestionNotFoundError, AnswerOptionNotFoundError,
     QuestionAttemptNotFoundError, TaskNotFoundError, CodeTaskNotFoundError, TestCaseNotFoundError,
-    CodeSubmissionNotFoundError,
+    CodeSubmissionNotFoundError, CoursePublicationNotReadyError,
 )
 from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
+from app.presentation.api.schemas.course_publication import (
+    CoursePublicationErrorResponse,
+    CoursePublicationIssueResponse,
+)
 from app.presentation.execeptions import (
     AuthenticationError,
     PermissionDeniedError as PresentationPermissionDeniedError,
@@ -158,6 +162,27 @@ async def question_attempt_not_found_handler(
         status_code=status.HTTP_404_NOT_FOUND,
     )
 
+async def course_publication_not_ready_handler(
+        request: Request,
+        exc: Exception,
+) -> JSONResponse:
+    payload = CoursePublicationErrorResponse(
+        error="course_publication_not_ready",
+        message=str(exc),
+        issues=[
+            CoursePublicationIssueResponse(
+                code=str(issue.code),
+                message=issue.message,
+                entity_id=issue.entity_id,
+            )
+            for issue in exc.readiness.issues
+        ]
+    )
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=payload.model_dump(mode='json'),
+    )
+
 def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, domain_error_handler)
     app.add_exception_handler(ApplicationError, application_error_handler)
@@ -181,3 +206,4 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(CodeTaskNotFoundError, code_task_not_found_handler)
     app.add_exception_handler(TestCaseNotFoundError, test_case_not_found_handler)
     app.add_exception_handler(CodeSubmissionNotFoundError, code_submission_not_found_handler)
+    app.add_exception_handler(CoursePublicationNotReadyError, course_publication_not_ready_handler)
