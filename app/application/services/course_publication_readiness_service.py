@@ -14,7 +14,7 @@ class CoursePublicationReadinessService:
         self.uow = uow
 
     async def inspect_course(self, course: Course) -> CoursePublicationReadinessDTO:
-        issues = list[CoursePublicationIssueDTO] = []
+        issues: list[CoursePublicationIssueDTO] = []
         modules = await self.uow.modules.get_by_ids(course.module_ids)
         if len(modules) == 0:
             issues.append(CoursePublicationIssueDTO(
