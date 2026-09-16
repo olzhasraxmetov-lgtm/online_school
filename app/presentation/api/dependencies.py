@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
+from app.application.services.course_catalog_read_service import CourseCatalogReadService
 from app.application.services.course_content_access_service import CourseContentAccessService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
@@ -68,10 +69,20 @@ async def get_uow() -> AsyncIterator[SqlAlchemyUnitOfWork]:
 def get_get_courses_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetCoursesUseCase:
-    return GetCoursesUseCase(course_repository=uow.courses)
+    return GetCoursesUseCase(
+        course_repository=uow.courses,
+        catalog_read_service=CourseCatalogReadService(
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+            lecture_repository=uow.lectures,
+            question_repository=uow.questions,
+            task_repository=uow.tasks,
+            code_task_repository=uow.code_tasks,
+        ),
+    )
 
 def get_get_course_use_case(
-    uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetCourseUseCase:
     return GetCourseUseCase(
         course_repository=uow.courses,
@@ -79,6 +90,14 @@ def get_get_course_use_case(
             course_repository=uow.courses,
             module_repository=uow.modules,
             section_repository=uow.sections,
+        ),
+        catalog_read_service=CourseCatalogReadService(
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+            lecture_repository=uow.lectures,
+            question_repository=uow.questions,
+            task_repository=uow.tasks,
+            code_task_repository=uow.code_tasks,
         ),
     )
 
