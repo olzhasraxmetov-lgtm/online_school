@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.application.dto.course_catalog import CourseCatalogCardDTO
 from app.application.exceptions import CourseNotFoundError
 from app.application.interfaces.repositories.course_repository import CourseRepository
+from app.application.services.course_catalog_read_service import CourseCatalogReadService
 from app.application.services.course_content_access_service import CourseContentAccessService
-from app.domain.entities import Course, User
+from app.domain.entities import User
 
 
 @dataclass(slots=True)
@@ -17,11 +19,13 @@ class GetCourseUseCase:
             self,
             course_repository: CourseRepository,
             access_service: CourseContentAccessService,
+            catalog_read_service: CourseCatalogReadService,
     ) -> None:
         self.course_repository = course_repository
         self.access_service = access_service
+        self.catalog_read_service = catalog_read_service
 
-    async def execute(self, query: GetCourseQuery) -> Course:
+    async def execute(self, query: GetCourseQuery) -> CourseCatalogCardDTO:
         course = await self.course_repository.get_by_id(query.course_id)
         if course is None or not course.is_publicly_visible():
             raise CourseNotFoundError("Course not found.")
@@ -34,4 +38,4 @@ class GetCourseUseCase:
         if not can_view:
             raise CourseNotFoundError("Course not found.")
 
-        return course
+        return await self.catalog_read_service.build_course_card(course)
