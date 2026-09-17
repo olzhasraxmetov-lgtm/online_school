@@ -19,7 +19,7 @@ from app.presentation.api.schemas import (
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
-from app.presentation.api.schemas.content.course import CourseResponse, CourseStructureResponse
+from app.presentation.api.schemas.content.course import CourseStructureResponse
 from app.presentation.api.schemas.content.lecture import LectureResponse
 
 router = APIRouter(tags=["Content"])
@@ -38,7 +38,7 @@ async def get_courses(
 
 @router.get(
     "/courses/{course_id}",
-    response_model=CourseResponse,
+    response_model=CourseCatalogCardResponse,
     summary='Get public course page',
     description='Returns a detailed course card for the catalog page.',
     responses={
