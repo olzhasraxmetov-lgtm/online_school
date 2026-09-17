@@ -10,6 +10,13 @@ from app.presentation.api.schemas.auth import (
     TokenResponse,
     CurrentUserResponse
 )
+from app.presentation.api.schemas.catalog import (
+    CourseCatalogItemsResponse,
+    CourseCatalogSectionPreviewResponse,
+    CourseCatalogModulePreviewResponse,
+    CourseCatalogCardResponse,
+    CourseCatalogCountersResponse
+)
 from app.presentation.api.schemas.code_submissions import (
     CodeSubmissionResponse,
     SubmitCodeSubmissionRequest,
@@ -135,5 +142,10 @@ __all__ = [
     "CodeTaskStructureResponse",
     "CoursePublicationReadinessResponse",
     "CoursePublicationErrorResponse",
-    "CoursePublicationIssueResponse"
+    "CoursePublicationIssueResponse",
+    "CourseCatalogItemsResponse",
+    "CourseCatalogSectionPreviewResponse",
+    "CourseCatalogModulePreviewResponse",
+    "CourseCatalogCardResponse",
+    "CourseCatalogCountersResponse"
 ]

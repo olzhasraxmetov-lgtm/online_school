@@ -15,7 +15,7 @@ from app.presentation.api.dependencies import (
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
 )
 from app.presentation.api.schemas import (
-    CourseListItemResponse, ErrorResponse,
+    ErrorResponse, CourseCatalogItemsResponse, CourseCatalogCardResponse,
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
@@ -26,21 +26,21 @@ router = APIRouter(tags=["Content"])
 
 @router.get(
     "/courses",
-    response_model=list[CourseListItemResponse],
-    summary="List of available courses",
-    description="Returns a public list of available courses.",
+    response_model=list[CourseCatalogItemsResponse],
+    summary="Get public course catalog",
+    description='Returns published courses formatted for catalog listing.',
 )
 async def get_courses(
         use_case: GetCoursesUseCase = Depends(get_get_courses_use_case),
-) -> list[CourseListItemResponse]:
+) -> list[CourseCatalogItemsResponse]:
     result = await use_case.execute(GetCoursesQuery())
-    return [CourseListItemResponse.model_validate(course) for course in result]
+    return [CourseCatalogItemsResponse.model_validate(course) for course in result]
 
 @router.get(
     "/courses/{course_id}",
     response_model=CourseResponse,
-    summary="Get course by id",
-    description="Returns a course by id.",
+    summary='Get public course page',
+    description='Returns a detailed course card for the catalog page.',
     responses={
         404: {
             "description": "Course not found",
@@ -52,14 +52,14 @@ async def get_course(
         course_id: UUID,
         current_user: User | None = Security(get_current_user_or_none),
         use_case: GetCourseUseCase = Depends(get_get_course_use_case),
-) -> CourseResponse:
+) -> CourseCatalogCardResponse:
     result  = await use_case.execute(
         GetCourseQuery(
             course_id=course_id,
             actor=current_user,
         )
     )
-    return CourseResponse.model_validate(result)
+    return CourseCatalogCardResponse.model_validate(result)
 
 @router.get(
     "/courses/{course_id}/structure",
