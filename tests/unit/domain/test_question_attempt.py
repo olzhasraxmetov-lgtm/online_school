@@ -25,10 +25,12 @@ def test_question_attempt_apply_result_sets_status_points_and_checked_at() -> No
         attempt_number=1,
         selected_option_ids=[uuid4()],
     )
+
     attempt.apply_result(
         result_status=QuestionResultStatus.CORRECT,
-        awarded_points=5
+        awarded_points=5,
     )
-    assert attempt.is_correct is True
+
+    assert attempt.is_correct() is True
     assert attempt.awarded_points == 5
     assert attempt.checked_at is not None

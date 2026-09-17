@@ -54,15 +54,15 @@ def test_question_resolves_correct_status_and_points() -> None:
     question = Question(
         id=uuid4(),
         section_id=uuid4(),
-        text="What method allows to send  data?",
+        text='What method reads a resource?',
         position=1,
         question_type=QuestionType.SINGLE_CHOICE,
-        answer_option_ids=[correct_option_id, wrong_option_id],
+        answer_option_ids=[wrong_option_id, correct_option_id],
         reward_points=5,
     )
     options = [
-        AnswerOption(id=wrong_option_id, question_id=question.id, text='POST', position=1, is_correct=True),
-        AnswerOption(id=correct_option_id, question_id=question.id, text='GET', position=2, is_correct=False),
+        AnswerOption(id=wrong_option_id, question_id=question.id, text='POST', position=1, is_correct=False),
+        AnswerOption(id=correct_option_id, question_id=question.id, text='GET', position=2, is_correct=True),
     ]
 
     assert question.resolve_result_status([correct_option_id], options) is QuestionResultStatus.CORRECT
