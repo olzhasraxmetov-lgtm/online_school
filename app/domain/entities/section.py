@@ -61,6 +61,7 @@ class Section:
             raise SectionQuestionAlreadyAttachedError(
                 "Section question already attached."
             )
+        self.question_ids.append(question_id)
 
     def remove_question(self, question_id: UUID) -> None:
         if question_id not in self.question_ids:
