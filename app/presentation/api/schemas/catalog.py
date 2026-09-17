@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 from app.domain.entities.course import CourseStatus
 
+
 class CourseCatalogCountersResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -17,7 +18,7 @@ class CourseCatalogCountersResponse(BaseModel):
 class CourseCatalogItemsResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    ids: UUID
+    id: UUID
     title: str
     description: str
     status: CourseStatus
@@ -26,7 +27,7 @@ class CourseCatalogItemsResponse(BaseModel):
 class CourseCatalogSectionPreviewResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    ids: UUID
+    id: UUID
     title: str
     position: int
 
