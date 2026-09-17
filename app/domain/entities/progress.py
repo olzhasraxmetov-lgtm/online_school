@@ -122,10 +122,10 @@ class Progress:
         return not already_completed
 
     def sync_module_completion(self, module: Module) -> bool:
-        if not module.is_completed_by(self.completed_question_ids):
+        if not module.is_completed_by(self.completed_section_ids):
             return False
 
-        already_completed = self.has_completed_section(section_id=module.id)
+        already_completed = self.has_completed_module(module.id)
         self.mark_module_completed(module.id)
         return not already_completed
 
