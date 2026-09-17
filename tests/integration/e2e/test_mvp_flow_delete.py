@@ -22,7 +22,6 @@ async def test_mvp_flow_from_deleting_to_public_read(client, seeded_admin_user):
             'description': 'New course description',
         }
     )
-
     assert course_response.status_code == 201
     course_id = course_response.json()['id']
 
@@ -63,6 +62,12 @@ async def test_mvp_flow_from_deleting_to_public_read(client, seeded_admin_user):
     assert lecture_response.status_code == 201
     lecture_id = lecture_response.json()['id']
 
+    publish_response = await client.post(
+        f'/api/admin/courses/{course_id}/publish',
+        headers=headers,
+    )
+    assert publish_response.status_code == 200
+
     delete_module_response = await client.delete(
         f'/api/admin/modules/{module_id}',
         headers=headers,
@@ -76,7 +81,6 @@ async def test_mvp_flow_from_deleting_to_public_read(client, seeded_admin_user):
 
     assert course_structure_response.status_code == 200
     payload = course_structure_response.json()
-
     assert payload['title'] == 'New course title'
     assert payload['description'] == 'New course description'
     assert len(payload['modules']) == 0

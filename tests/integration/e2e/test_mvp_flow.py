@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.asyncio
 async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
     login_response = await client.post(
@@ -7,9 +8,8 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
         json={
             'email': 'admin@example.com',
             'password': 'strongpassword123',
-        }
+        },
     )
-
     assert login_response.status_code == 200
     access_token = login_response.json()['access_token']
     headers = {'Authorization': f'Bearer {access_token}'}
@@ -18,11 +18,10 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
         '/api/admin/courses',
         headers=headers,
         json={
-            'title': 'New course',
-            'description': 'New description',
-        }
+            'title': 'FastAPI course',
+            'description': 'Clean architecture in practice.',
+        },
     )
-
     assert course_response.status_code == 201
     course_id = course_response.json()['id']
 
@@ -30,12 +29,11 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
         f'/api/admin/courses/{course_id}/modules',
         headers=headers,
         json={
-            'title': 'New module',
-            'description': 'New description',
-            'position': 1
-        }
+            'title': 'MVP stage',
+            'description': 'Content, users and access.',
+            'position': 1,
+        },
     )
-
     assert module_response.status_code == 201
     module_id = module_response.json()['id']
 
@@ -63,14 +61,30 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
     assert lecture_response.status_code == 201
     lecture_id = lecture_response.json()['id']
 
-    courses_response = await client.get('/api/courses')
-    assert courses_response.status_code == 200
-    assert len(courses_response.json()) == 1
-
-    structure_response = await client.get(
-        f'/api/courses/{course_id}/structure',
+    await client.post(
+        f'/api/admin/courses/{course_id}/publish',
+        headers=headers,
     )
 
+    courses_response = await client.get('/api/courses')
+    assert courses_response.status_code == 200
+    courses_payload = courses_response.json()
+    assert len(courses_payload) == 1
+    assert courses_payload[0]['title'] == 'FastAPI course'
+    assert courses_payload[0]['counters']['module_count'] == 1
+    assert courses_payload[0]['counters']['section_count'] == 1
+    assert courses_payload[0]['counters']['lecture_count'] == 1
+
+    course_card_response = await client.get(f'/api/courses/{course_id}')
+    assert course_card_response.status_code == 200
+    course_card_payload = course_card_response.json()
+    assert course_card_payload['title'] == 'FastAPI course'
+    assert course_card_payload['counters']['module_count'] == 1
+    assert len(course_card_payload['modules']) == 1
+    assert course_card_payload['modules'][0]['title'] == 'MVP stage'
+    assert len(course_card_payload['modules'][0]['sections']) == 1
+
+    structure_response = await client.get(f'/api/courses/{course_id}/structure')
     assert structure_response.status_code == 200
     structure_payload = structure_response.json()
     assert len(structure_payload['modules']) == 1
