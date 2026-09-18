@@ -43,6 +43,9 @@ class Course:
         if len(self.tag_names) > 10:
             raise InvalidCourseError('Course cannot have more than 10 tags.')
 
+    def preview_description(self) -> str:
+        return self.short_description or self.description
+
     def _normalize_tag_names(self, tag_names: list[str]) -> list[str]:
         normalized: list[str] = []
         seen: set[str] = set()
