@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.domain.entities import User
-from app.domain.entities.course import Course
+from app.domain.entities.course import Course, CourseDifficulty
 
 
 @dataclass(slots=True)
@@ -11,6 +11,10 @@ class CreateCourseCommand:
     actor: User
     title: str
     description: str
+    short_description: str = ''
+    cover_image_url: str | None = None
+    difficulty: CourseDifficulty = CourseDifficulty.BEGINNER
+    tag_names: list[str] | None = None
 
 
 class CreateCourseUseCase:
@@ -26,6 +30,10 @@ class CreateCourseUseCase:
                 title=command.title,
                 description=command.description,
                 author_id=command.actor.id,
+                short_description=command.short_description,
+                cover_image_url=command.cover_image_url,
+                tag_names=list(command.tag_names or []),
+                difficulty=command.difficulty,
             )
             await self.uow.courses.add(course)
             await self.uow.commit()

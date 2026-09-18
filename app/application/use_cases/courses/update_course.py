@@ -5,7 +5,7 @@ from app.application.exceptions import CourseNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities import User
-from app.domain.entities.course import Course
+from app.domain.entities.course import Course, CourseDifficulty
 
 
 @dataclass(slots=True)
@@ -14,6 +14,10 @@ class UpdateCourseCommand:
     course_id: UUID
     title: str
     description: str
+    short_description: str = ''
+    cover_image_url: str | None = None
+    difficulty: CourseDifficulty = CourseDifficulty.BEGINNER
+    tag_names: list[str] | None = None
 
 class UpdateCourseUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
@@ -31,9 +35,12 @@ class UpdateCourseUseCase:
                 course_id=command.course_id,
             )
 
-            course.update(
-                command.title,
-                command.description
+            course.update(title=command.title, description=command.description)
+            course.update_metadata(
+                short_description=command.short_description,
+                cover_image_url=command.cover_image_url,
+                tag_names=list(command.tag_names or []),
+                difficulty=command.difficulty,
             )
             await self.uow.courses.update(course)
             await self.uow.commit()
