@@ -15,7 +15,7 @@ from app.presentation.api.dependencies import (
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
 )
 from app.presentation.api.schemas import (
-    ErrorResponse, CourseCatalogItemsResponse, CourseCatalogCardResponse,
+    ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse,
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
@@ -26,15 +26,15 @@ router = APIRouter(tags=["Content"])
 
 @router.get(
     "/courses",
-    response_model=list[CourseCatalogItemsResponse],
+    response_model=list[CourseCatalogItemResponse],
     summary="Get public course catalog",
     description='Returns published courses formatted for catalog listing.',
 )
 async def get_courses(
         use_case: GetCoursesUseCase = Depends(get_get_courses_use_case),
-) -> list[CourseCatalogItemsResponse]:
+) -> list[CourseCatalogItemResponse]:
     result = await use_case.execute(GetCoursesQuery())
-    return [CourseCatalogItemsResponse.model_validate(course) for course in result]
+    return [CourseCatalogItemResponse.model_validate(course) for course in result]
 
 @router.get(
     "/courses/{course_id}",

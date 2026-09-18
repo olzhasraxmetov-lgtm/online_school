@@ -11,7 +11,7 @@ from app.presentation.api.schemas.auth import (
     CurrentUserResponse
 )
 from app.presentation.api.schemas.catalog import (
-    CourseCatalogItemsResponse,
+    CourseCatalogItemResponse,
     CourseCatalogSectionPreviewResponse,
     CourseCatalogModulePreviewResponse,
     CourseCatalogCardResponse,
@@ -143,7 +143,7 @@ __all__ = [
     "CoursePublicationReadinessResponse",
     "CoursePublicationErrorResponse",
     "CoursePublicationIssueResponse",
-    "CourseCatalogItemsResponse",
+    "CourseCatalogItemResponse",
     "CourseCatalogSectionPreviewResponse",
     "CourseCatalogModulePreviewResponse",
     "CourseCatalogCardResponse",
