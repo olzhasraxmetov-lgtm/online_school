@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from app.domain.entities.course import CourseStatus
+from app.domain.entities.course import CourseStatus, CourseDifficulty
 from app.presentation.api.schemas.content.module import ModuleStructureResponse
 
 
@@ -13,6 +13,10 @@ class CourseBaseResponse(BaseModel):
    title: str
    description: str
    status: CourseStatus
+   short_description: str
+   cover_image_url: str | None
+   difficulty: CourseDifficulty
+   tag_names: list[str]
 
 class CourseListItemResponse(CourseBaseResponse):
    pass
@@ -27,6 +31,10 @@ class CourseStructureResponse(CourseBaseResponse):
 class CourseWriteRequest(BaseModel):
    title: str = Field(min_length=1, max_length=255)
    description: str = Field(min_length=1)
+   short_description: str = Field(default='', max_length=280)
+   cover_image_url: HttpUrl | None = None
+   difficulty: CourseDifficulty = CourseDifficulty.BEGINNER
+   tag_names: list[str] = Field(default_factory=list, max_length=10)
 
 
 class CreateCourseRequest(CourseWriteRequest):
@@ -35,3 +43,4 @@ class CreateCourseRequest(CourseWriteRequest):
 
 class UpdateCourseRequest(CourseWriteRequest):
    pass
+
