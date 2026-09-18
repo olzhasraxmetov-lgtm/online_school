@@ -23,6 +23,7 @@ class CourseCatalogItemResponse(BaseModel):
     title: str
     short_description: str
     cover_image_url: str | None
+    tag_names: list[str]
     difficulty: CourseDifficulty
     status: CourseStatus
     counters: CourseCatalogCountersResponse
@@ -52,6 +53,7 @@ class CourseCatalogCardResponse(BaseModel):
     id: UUID
     title: str
     description: str
+    tag_names: list[str]
     short_description: str
     cover_image_url: str | None
     difficulty: CourseDifficulty

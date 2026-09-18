@@ -40,6 +40,7 @@ class CourseCatalogReadService:
             cover_image_url=course.cover_image_url,
             difficulty=course.difficulty,
             status=course.status,
+            tag_names=list(course.tag_names),
             counters=counters,
         )
 
@@ -73,6 +74,7 @@ class CourseCatalogReadService:
             cover_image_url=course.cover_image_url,
             difficulty=course.difficulty,
             status=course.status,
+            tag_names=list(course.tag_names),
             counters=counters,
             modules=module_dtos,
         )

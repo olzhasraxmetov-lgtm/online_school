@@ -17,6 +17,7 @@ class CourseCatalogCountersDTO:
 class CourseCatalogItemDTO:
     id: UUID
     title: str
+    tag_names: list[str]
     status: CourseStatus
     short_description: str
     cover_image_url: str | None
@@ -44,6 +45,7 @@ class CourseCatalogCardDTO:
     description: str
     short_description: str
     cover_image_url: str | None
+    tag_names: list[str]
     difficulty: CourseDifficulty
     status: CourseStatus
     counters: CourseCatalogCountersDTO
