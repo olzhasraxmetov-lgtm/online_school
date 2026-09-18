@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
@@ -20,6 +20,10 @@ class CourseModel(Base):
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String(32), default='draft', index=True)
+    cover_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    short_description: Mapped[str] = mapped_column(String(280), default='')
+    difficulty: Mapped[str] = mapped_column(String(32), default='beginner')
+    tag_names: Mapped[list[str]] = mapped_column(JSON, default=list)
 
     author: Mapped['UserModel'] = relationship(
         'UserModel',
