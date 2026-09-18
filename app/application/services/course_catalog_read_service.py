@@ -36,7 +36,9 @@ class CourseCatalogReadService:
         return CourseCatalogItemDTO(
             id=course.id,
             title=course.title,
-            description=course.description,
+            short_description=course.preview_description(),
+            cover_image_url=course.cover_image_url,
+            difficulty=course.difficulty,
             status=course.status,
             counters=counters,
         )
@@ -67,6 +69,9 @@ class CourseCatalogReadService:
             id=course.id,
             title=course.title,
             description=course.description,
+            short_description=course.preview_description(),
+            cover_image_url=course.cover_image_url,
+            difficulty=course.difficulty,
             status=course.status,
             counters=counters,
             modules=module_dtos,
