@@ -26,6 +26,7 @@ from app.application.use_cases.courses.get_course_structure import GetCourseStru
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase
 from app.application.use_cases.courses.publish_course import PublishCourseUseCase
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase
+from app.application.use_cases.courses.upload_course_image import CourseImageUploadUseCase
 from app.application.use_cases.lectures.create_lecture import CreateLectureUseCase
 from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase
@@ -56,6 +57,7 @@ from app.application.use_cases.users.register_user import RegisterUserUseCase
 from app.bootstrap.build_submission_queue import build_submission_queue
 from app.domain.entities.user import User
 from app.infrastructure.database import SessionFactory, SqlAlchemyUnitOfWork
+from app.infrastructure.images.image_storage import ImageStorageSaver
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
 from app.infrastructure.security.token_service import JwtTokenService, InvalidTokenError
 from app.presentation.execeptions import AuthenticationError, PermissionDeniedError
@@ -99,6 +101,12 @@ def get_get_course_use_case(
             task_repository=uow.tasks,
             code_task_repository=uow.code_tasks,
         ),
+    )
+
+def get_course_image_upload_use_case() -> CourseImageUploadUseCase:
+    return CourseImageUploadUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory),
+        image_storage=ImageStorageSaver()
     )
 
 def get_get_course_publication_readiness_use_case() -> GetCoursePublicationReadinessUseCase:
