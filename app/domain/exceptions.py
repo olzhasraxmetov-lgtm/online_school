@@ -87,3 +87,6 @@ class InvalidExecutionResultError(DomainError):
 
 class InvalidCourseStatusTransitionError(DomainError):
     pass
+
+class InvalidCoverImageError(DomainError):
+    pass
