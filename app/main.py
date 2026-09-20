@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
 from app.infrastructure.config import get_settings
 from app.presentation.api.handlers import register_exception_handlers
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
     )
     register_exception_handlers(app)
     app.include_router(api_router)
+    app.mount(settings.image.image_cover_prefix, StaticFiles(directory=settings.image.image_cover_dir), name="image_covers")
     return app
 
 

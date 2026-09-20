@@ -12,7 +12,6 @@ class CreateCourseCommand:
     title: str
     description: str
     short_description: str = ''
-    cover_image_url: str | None = None
     difficulty: CourseDifficulty = CourseDifficulty.BEGINNER
     tag_names: list[str] | None = None
 
@@ -31,7 +30,6 @@ class CreateCourseUseCase:
                 description=command.description,
                 author_id=command.actor.id,
                 short_description=command.short_description,
-                cover_image_url=command.cover_image_url,
                 tag_names=list(command.tag_names or []),
                 difficulty=command.difficulty,
             )

@@ -8,7 +8,7 @@ from app.application.exceptions import (
     SectionNotFoundError, LectureNotFoundError,
     PermissionDeniedError as ApplicationPermissionDeniedError, QuestionNotFoundError, AnswerOptionNotFoundError,
     QuestionAttemptNotFoundError, TaskNotFoundError, CodeTaskNotFoundError, TestCaseNotFoundError,
-    CodeSubmissionNotFoundError, CoursePublicationNotReadyError,
+    CodeSubmissionNotFoundError, CoursePublicationNotReadyError, UploadImageError,
 )
 from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
@@ -183,6 +183,13 @@ async def course_publication_not_ready_handler(
         content=payload.model_dump(mode='json'),
     )
 
+async def upload_image_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    return build_error_response(
+        error='upload_image_error',
+        message=str(exc),
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
 def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, domain_error_handler)
     app.add_exception_handler(ApplicationError, application_error_handler)
@@ -207,3 +214,4 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(TestCaseNotFoundError, test_case_not_found_handler)
     app.add_exception_handler(CodeSubmissionNotFoundError, code_submission_not_found_handler)
     app.add_exception_handler(CoursePublicationNotReadyError, course_publication_not_ready_handler)
+    app.add_exception_handler(UploadImageError, upload_image_error_handler)

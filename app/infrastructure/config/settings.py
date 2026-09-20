@@ -18,6 +18,10 @@ class JwtSettings(BaseModel):
     algorithm: str
     access_token_expires_minutes: int
 
+class ImageSaveSettings(BaseModel):
+    image_cover_dir: str
+    image_cover_prefix: str
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -40,6 +44,9 @@ class Settings(BaseSettings):
         default=30,
         validation_alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES"
     )
+
+    image_cover_dir: str = Field(default='cover_images/', validation_alias="IMAGE_COVER_DIR")
+    image_cover_url_prefix: str = Field(default='/static', validation_alias="IMAGE_COVER_URL_PREFIX")
 
     redis_url: str = Field(
         default='redis://localhost:6379/0',
@@ -71,6 +78,13 @@ class Settings(BaseSettings):
             secret_key=self.jwt_secret_key,
             algorithm=self.jwt_algorithm,
             access_token_expires_minutes=self.jwt_access_token_expire_minutes,
+        )
+
+    @property
+    def image(self) -> ImageSaveSettings:
+        return ImageSaveSettings(
+            image_cover_dir=self.image_cover_dir,
+            image_cover_prefix=self.image_cover_url_prefix,
         )
 
 @lru_cache(maxsize=1)

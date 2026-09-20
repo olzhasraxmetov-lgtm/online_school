@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from starlette import status
 
 from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase, ArchiveCourseCommand
@@ -10,6 +10,7 @@ from app.application.use_cases.courses.get_course_publication_readiness import G
     GetCoursePublicationReadinessQuery
 from app.application.use_cases.courses.publish_course import PublishCourseUseCase, PublishCourseCommand
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase, UpdateCourseCommand
+from app.application.use_cases.courses.upload_course_image import CourseImageUploadUseCase, UploadCourseImageCommand
 from app.application.use_cases.lectures.create_lecture import CreateLectureCommand, CreateLectureUseCase
 from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase, DeleteLectureCommand
 from app.application.use_cases.lectures.update_lecture import UpdateLectureCommand, UpdateLectureUseCase
@@ -33,7 +34,7 @@ from app.presentation.api.dependencies import (
     get_delete_module_use_case,
     get_delete_section_use_case,
     get_delete_lecture_use_case, get_current_author_or_admin, get_publish_course_use_case, get_archive_course_use_case,
-    get_get_course_publication_readiness_use_case
+    get_get_course_publication_readiness_use_case, get_course_image_upload_use_case
 )
 from app.presentation.api.schemas import ErrorResponse, CoursePublicationReadinessResponse, \
     CoursePublicationErrorResponse
@@ -97,9 +98,44 @@ async def create_course(
             title=request.title,
             description=request.description,
             short_description=request.short_description,
-            cover_image_url=str(request.cover_image_url) if request.cover_image_url is not None else None,
             difficulty=request.difficulty,
             tag_names=list(request.tag_names),
+        )
+    )
+    return CourseResponse.model_validate(result)
+
+@router.post(
+    '/courses/{course_id}/image_cover',
+    summary="Add image cover",
+    description="Add image cover for course by its ID",
+    responses={
+        400: {
+            "description": "Domain or Application validation error.",
+            "model": ErrorResponse,
+        },
+        404: {
+            "description": "Course not found.",
+            "model": ErrorResponse,
+        },
+        500: {
+            "description": "Failed to save the uploaded image.",
+            "model": ErrorResponse,
+        },
+    }
+)
+async def add_image_cover(
+        course_id: UUID,
+        actor: User = Depends(get_current_author_or_admin),
+        file: UploadFile = File(...),
+        use_case: CourseImageUploadUseCase = Depends(get_course_image_upload_use_case),
+) -> CourseResponse:
+    content = await file.read()
+    result = await use_case.execute(
+        UploadCourseImageCommand(
+            actor=actor,
+            course_id=course_id,
+            content=content,
+            content_type=file.content_type,
         )
     )
     return CourseResponse.model_validate(result)
@@ -133,7 +169,6 @@ async def update_course(
             title=request.title,
             description=request.description,
             short_description=request.short_description,
-            cover_image_url=str(request.cover_image_url) if request.cover_image_url is not None else None,
             difficulty=request.difficulty,
             tag_names=list(request.tag_names),
         )
