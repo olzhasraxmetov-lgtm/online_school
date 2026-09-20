@@ -40,11 +40,9 @@ async def test_author_can_read_own_draft_course_card(
         f'/api/courses/{course_id}',
         headers=author_auth_headers,
     )
-    print(response.json())
-
-    # assert response.status_code == 200
-    # payload = response.json()
-    # assert payload['id'] == course_id
-    # assert payload['status'] == 'draft'
-    # assert payload['counters']['module_count'] == 0
-    # assert payload['modules'] == []
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['id'] == course_id
+    assert payload['status'] == 'draft'
+    assert payload['counters']['module_count'] == 0
+    assert payload['modules'] == []
