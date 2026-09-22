@@ -7,7 +7,7 @@ from app.application.services.course_catalog_read_service import CourseCatalogRe
 
 @dataclass(slots=True)
 class GetCoursesQuery:
-    pass
+    search: str = ''
 
 
 class GetCoursesUseCase:
@@ -20,7 +20,12 @@ class GetCoursesUseCase:
         self.catalog_read_service = catalog_read_service
 
     async def execute(self, query: GetCoursesQuery) -> list[CourseCatalogItemDTO]:
-        courses = await self.course_repository.list_published()
+        search = query.search.strip()
+        if search:
+            courses = await self.course_repository.search_published(search=search)
+        else:
+            courses = await self.course_repository.list_published()
+
         items: list[CourseCatalogItemDTO] = []
 
         for course in courses:
