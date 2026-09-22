@@ -1,6 +1,7 @@
+import re
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -26,6 +27,24 @@ class SqlAlchemyCourseRepository(CourseRepository):
 
     async def list(self) -> list[Course]:
         stmt = select(CourseModel).options(selectinload(CourseModel.modules))
+        result = await self.session.execute(stmt)
+        return [CourseMapper.to_domain(model) for model in result.scalars().all()]
+
+    async def search_published(self, search: str) -> 'list[Course]':
+        pattern = f'%{search}%'
+        stmt = (
+            select(CourseModel)
+            .options(selectinload(CourseModel.modules))
+            .where(CourseModel.status == CourseStatus.PUBLISHED.value)
+            .where(
+                or_(
+                    CourseModel.title.ilike(pattern),
+                    CourseModel.description.ilike(pattern),
+                    CourseModel.short_description.ilike(pattern),
+                )
+            )
+        )
+
         result = await self.session.execute(stmt)
         return [CourseMapper.to_domain(model) for model in result.scalars().all()]
 
