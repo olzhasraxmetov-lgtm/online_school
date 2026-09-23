@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.application.interfaces.repositories.course_repository import CourseRepository
-from app.domain.entities.course import Course, CourseStatus
+from app.domain.entities.course import Course, CourseStatus, CourseDifficulty
 from app.infrastructure.database.mappers.course_mapper import CourseMapper
 from app.infrastructure.database.models.course_model import CourseModel
 
@@ -30,21 +30,30 @@ class SqlAlchemyCourseRepository(CourseRepository):
         result = await self.session.execute(stmt)
         return [CourseMapper.to_domain(model) for model in result.scalars().all()]
 
-    async def search_published(self, search: str) -> 'list[Course]':
-        pattern = f'%{search}%'
+    async def find_published_catalog_courses(
+            self,
+            *,
+            search: str = '',
+            difficulty: CourseDifficulty | None = None,
+    ) -> 'list[Course]':
         stmt = (
             select(CourseModel)
             .options(selectinload(CourseModel.modules))
             .where(CourseModel.status == CourseStatus.PUBLISHED.value)
-            .where(
+        )
+
+        if search:
+            pattern =  f'%{search}%'
+            stmt = stmt.where(
                 or_(
                     CourseModel.title.ilike(pattern),
                     CourseModel.description.ilike(pattern),
                     CourseModel.short_description.ilike(pattern),
                 )
             )
-        )
 
+        if difficulty is not None:
+            stmt = stmt.where(CourseModel.difficulty == difficulty.value)
         result = await self.session.execute(stmt)
         return [CourseMapper.to_domain(model) for model in result.scalars().all()]
 
