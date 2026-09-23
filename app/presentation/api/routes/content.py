@@ -10,6 +10,7 @@ from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, Ge
 from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
 from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
 from app.domain.entities import User
+from app.domain.entities.course import CourseDifficulty
 from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
@@ -32,9 +33,17 @@ router = APIRouter(tags=["Content"])
 )
 async def get_courses(
         search: str = Query(default=''),
+        difficulty: CourseDifficulty | None = Query(default=None),
+        tag: list[str] = Query(default=[]),
         use_case: GetCoursesUseCase = Depends(get_get_courses_use_case),
 ) -> list[CourseCatalogItemResponse]:
-    result = await use_case.execute(GetCoursesQuery(search=search))
+    result = await use_case.execute(
+        GetCoursesQuery(
+            search=search,
+            difficulty=difficulty,
+            tag_names=list(tag),
+        )
+    )
     return [CourseCatalogItemResponse.model_validate(course) for course in result]
 
 @router.get(
