@@ -67,6 +67,10 @@ from app.presentation.api.schemas.course_publication import (
     CoursePublicationIssueResponse
 )
 from app.presentation.api.schemas.errors import ErrorResponse
+from app.presentation.api.schemas.profile import (
+    UserProfileResponse,
+    UpdateMyProfileRequest
+)
 from app.presentation.api.schemas.question import (
     QuestionResponse,
     UpdateQuestionRequest,
@@ -147,5 +151,7 @@ __all__ = [
     "CourseCatalogSectionPreviewResponse",
     "CourseCatalogModulePreviewResponse",
     "CourseCatalogCardResponse",
-    "CourseCatalogCountersResponse"
+    "CourseCatalogCountersResponse",
+    "UserProfileResponse",
+    "UpdateMyProfileRequest"
 ]
