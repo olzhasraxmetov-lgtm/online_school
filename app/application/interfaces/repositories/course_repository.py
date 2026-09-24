@@ -14,10 +14,6 @@ class CourseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def search_published(self, search: str) -> 'list[Course]':
-        raise NotImplementedError
-
-    @abstractmethod
     async def find_published_catalog_courses(
             self,
             *,
