@@ -12,6 +12,9 @@ class UserMapper:
             email=model.email,
             hashed_password=model.hashed_password,
             role=UserRole(model.role),
+            full_name=model.full_name,
+            bio=model.bio,
+            avatar_url=model.avatar_url,
         )
 
     @staticmethod
@@ -21,4 +24,7 @@ class UserMapper:
             email=entity.email,
             hashed_password=entity.hashed_password,
             role=str(entity.role),
+            full_name=entity.full_name,
+            bio=entity.bio,
+            avatar_url=entity.avatar_url,
         )
