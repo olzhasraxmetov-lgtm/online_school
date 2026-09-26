@@ -10,6 +10,13 @@ from app.presentation.api.schemas.auth import (
     TokenResponse,
     CurrentUserResponse
 )
+from app.presentation.api.schemas.author_course_analytics import (
+    AuthorModuleAnalyticsResponse,
+    DifficultQuestionAnalyticsResponse,
+    DifficultTaskAnalyticsResponse,
+    ProblematicCodeTaskAnalyticsResponse,
+    AuthorCourseAnalyticsResponse
+)
 from app.presentation.api.schemas.catalog import (
     CourseCatalogItemResponse,
     CourseCatalogSectionPreviewResponse,
@@ -153,5 +160,10 @@ __all__ = [
     "CourseCatalogCardResponse",
     "CourseCatalogCountersResponse",
     "UserProfileResponse",
-    "UpdateMyProfileRequest"
+    "UpdateMyProfileRequest",
+    "AuthorModuleAnalyticsResponse",
+    "DifficultQuestionAnalyticsResponse",
+    "DifficultTaskAnalyticsResponse",
+    "ProblematicCodeTaskAnalyticsResponse",
+    "AuthorCourseAnalyticsResponse"
 ]
