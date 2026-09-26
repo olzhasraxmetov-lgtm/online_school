@@ -35,6 +35,7 @@ from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
 from app.application.use_cases.profile.get_my_profile import GetMyProfileUseCase
+from app.application.use_cases.profile.get_my_teaching_course_analytics import GetMyTeachingCourseAnalyticsUseCase
 from app.application.use_cases.profile.update_my_profile import UpdateMyProfileUseCase
 from app.application.use_cases.question.create_question import CreateQuestionUseCase
 from app.application.use_cases.question.delete_question import DeleteQuestionUseCase
@@ -141,6 +142,11 @@ def get_publish_course_use_case() -> PublishCourseUseCase:
 
 def get_archive_course_use_case() -> ArchiveCourseUseCase:
     return ArchiveCourseUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+def get_get_my_teaching_course_analytics_use_case() -> GetMyTeachingCourseAnalyticsUseCase:
+    return GetMyTeachingCourseAnalyticsUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
