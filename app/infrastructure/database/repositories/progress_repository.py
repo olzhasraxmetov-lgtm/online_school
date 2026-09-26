@@ -26,6 +26,11 @@ class SqlAlchemyProgressRepository(ProgressRepository):
         model = result.scalar_one_or_none()
         return None if model is None else ProgressMapper.to_domain(model)
 
+    async def list_by_course_id(self, course_id: UUID) -> list[Progress]:
+        stmt = select(ProgressModel).where(ProgressModel.course_id == str(course_id))
+        result = await self.session.execute(stmt)
+        return [ProgressMapper.to_domain(model) for model in result.scalars().all()]
+
     async def add(self, progress: Progress) -> None:
         self.session.add(ProgressMapper.to_model(progress))
         await self.session.flush()
