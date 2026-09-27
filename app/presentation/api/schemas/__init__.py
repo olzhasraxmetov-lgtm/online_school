@@ -90,6 +90,12 @@ from app.presentation.api.schemas.question_attempts import (
     SubmitQuestionAnswerRequest,
     QuestionAttemptResultResponse
 )
+from app.presentation.api.schemas.student_analytics import (
+    StudentModuleAnalyticsResponse,
+    StudentWeakQuestionResponse,
+    StudentWeakTaskResponse,
+    StudentCourseAnalyticsResponse
+)
 from app.presentation.api.schemas.task_attempts import (
     SubmitTaskAnswerRequest,
     TaskAttemptResponse,
@@ -165,5 +171,9 @@ __all__ = [
     "DifficultQuestionAnalyticsResponse",
     "DifficultTaskAnalyticsResponse",
     "ProblematicCodeTaskAnalyticsResponse",
-    "AuthorCourseAnalyticsResponse"
+    "AuthorCourseAnalyticsResponse",
+    "StudentModuleAnalyticsResponse",
+    "StudentWeakQuestionResponse",
+    "StudentWeakTaskResponse",
+    "StudentCourseAnalyticsResponse"
 ]
