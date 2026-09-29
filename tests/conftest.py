@@ -257,6 +257,21 @@ async def seeded_student_user(session_factory):
         await session.refresh(user)
         return user
 
+@pytest_asyncio.fixture
+async def seeded_other_student_user(session_factory):
+    hasher = PwdlibPasswordHasher()
+    async with session_factory() as session:
+        user = UserModel(
+            id=str(uuid4()),
+            email='student_other@example.com',
+            hashed_password=hasher.hash('strongpassword123'),
+            role='student',
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
 
 @pytest_asyncio.fixture
 async def seeded_author_user(session_factory):
@@ -699,3 +714,29 @@ async def seeded_author_analytics_tree(
         task_id=task_id,
         code_task_id=code_task_id,
     )
+
+@pytest_asyncio.fixture
+async def create_code_submission(session_factory):
+    async def _create(
+            student_id: str,
+            code_task_id: str,
+            status: str,
+            attempt_number: int = 1
+    ):
+        async with session_factory() as session:
+            code_submission_id = str(uuid4())
+            code_submission = CodeSubmissionModel(
+                id=code_submission_id,
+                student_id=student_id,
+                code_task_id=code_task_id,
+                source_code="a, b = map(int, input().split())\nprint(a + b)",
+                attempt_number=attempt_number,
+                status=status,
+                created_at=datetime.now(UTC)
+            )
+            session.add(code_submission)
+            await session.commit()
+        return code_submission
+
+    return _create
+
