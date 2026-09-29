@@ -18,7 +18,7 @@ from app.domain.entities.user import User
 from app.presentation.api.dependencies import (
     get_current_user,
     get_get_my_profile_use_case,
-    get_update_my_profile_use_case, get_get_my_teaching_course_analytics_use_case, get_get_my_course_analytics_use_case,
+    get_update_my_profile_use_case, get_get_my_course_analytics_use_case, get_get_my_teaching_course_analytics_use_case,
 )
 from app.presentation.api.schemas import ErrorResponse, UpdateMyProfileRequest, UserProfileResponse, \
     AuthorCourseAnalyticsResponse
@@ -75,6 +75,36 @@ async def update_my_profile(
     return UserProfileResponse.model_validate(result)
 
 @router.get(
+    '/me/courses/{course_id}/analytics',
+    response_model=StudentCourseAnalyticsResponse,
+    summary='Get my course analytics',
+    description='Returns learning analytics of the current student for the selected course.',
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'User cannot view own learning analytics.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Course was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_my_course_analytics(
+    course_id: UUID,
+    actor: User = Depends(get_current_user),
+    use_case: GetMyCourseAnalyticsUseCase = Depends(get_get_my_course_analytics_use_case),
+) -> StudentCourseAnalyticsResponse:
+    result = await use_case.execute(
+        GetMyCourseAnalyticsQuery(actor=actor, course_id=course_id)
+    )
+    return StudentCourseAnalyticsResponse.model_validate(result)
+
+@router.get(
     '/me/teaching/courses/{course_id}/analytics',
     response_model=AuthorCourseAnalyticsResponse,
     summary='Get teaching analytics for my course',
@@ -105,33 +135,3 @@ async def get_my_teaching_course_analytics(
         GetMyTeachingCourseAnalyticsQuery(actor=actor, course_id=course_id)
     )
     return AuthorCourseAnalyticsResponse.model_validate(result)
-
-@router.get(
-    '/me/courses/{course_id}/analytics',
-    response_model=StudentCourseAnalyticsResponse,
-    summary='Get my course analytics',
-    description='Returns learning analytics of the current student for the selected course.',
-    responses={
-        401: {
-            'description': 'Authentication credentials are missing or invalid.',
-            'model': ErrorResponse,
-        },
-        403: {
-            'description': 'User cannot view own learning analytics.',
-            'model': ErrorResponse,
-        },
-        404: {
-            'description': 'Course was not found.',
-            'model': ErrorResponse,
-        },
-    },
-)
-async def get_my_course_analytics(
-    course_id: UUID,
-    actor: User = Depends(get_current_user),
-    use_case: GetMyCourseAnalyticsUseCase = Depends(get_get_my_course_analytics_use_case),
-) -> StudentCourseAnalyticsResponse:
-    result = await use_case.execute(
-        GetMyCourseAnalyticsQuery(actor=actor, course_id=course_id)
-    )
-    return StudentCourseAnalyticsResponse.model_validate(result)
