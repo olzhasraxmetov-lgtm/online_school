@@ -90,3 +90,6 @@ class InvalidCourseStatusTransitionError(DomainError):
 
 class InvalidCoverImageError(DomainError):
     pass
+
+class InvalidCourseReviewError(DomainError):
+    pass
