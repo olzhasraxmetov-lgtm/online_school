@@ -7,6 +7,7 @@ from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
 from app.application.services.course_catalog_read_service import CourseCatalogReadService
 from app.application.services.course_content_access_service import CourseContentAccessService
+from app.application.services.course_rating_read_service import CourseRatingReadService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
@@ -17,6 +18,8 @@ from app.application.use_cases.code_task.create_code_task import CreateCodeTaskU
 from app.application.use_cases.code_task.delete_code_task import DeleteCodeTaskUseCase
 from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase
 from app.application.use_cases.code_task.update_code_task import UpdateCodeTaskUseCase
+from app.application.use_cases.course_reviews.get_course_reviews import GetCourseReviewsUseCase
+from app.application.use_cases.course_reviews.upsert_course_review import UpsertCourseReviewUseCase
 from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase
 from app.application.use_cases.courses.create_course import CreateCourseUseCase
 from app.application.use_cases.courses.delete_course import DeleteCourseUseCase
@@ -84,6 +87,9 @@ def get_get_courses_use_case(
             question_repository=uow.questions,
             task_repository=uow.tasks,
             code_task_repository=uow.code_tasks,
+            rating_read_service=CourseRatingReadService(
+                review_repository=uow.course_reviews,
+            )
         ),
     )
 
@@ -104,7 +110,19 @@ def get_get_course_use_case(
             question_repository=uow.questions,
             task_repository=uow.tasks,
             code_task_repository=uow.code_tasks,
+            rating_read_service=CourseRatingReadService(review_repository=uow.course_reviews),
         ),
+    )
+
+def get_upsert_course_review_use_case() -> UpsertCourseReviewUseCase:
+    return  (
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
+    )
+
+
+def get_get_course_reviews_use_case() -> GetCourseReviewsUseCase:
+    return GetCourseReviewsUseCase(
+        uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
 def get_course_image_upload_use_case() -> CourseImageUploadUseCase:
