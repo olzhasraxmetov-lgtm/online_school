@@ -12,6 +12,7 @@ from app.domain.entities.section import Section
 from app.domain.entities.task import Task
 from app.domain.entities.test_case import TestCase
 from app.domain.entities.user import UserRole, User
+from app.domain.entities.course_review import CourseReview
 
 __all__ = [
     "Course",
@@ -33,4 +34,5 @@ __all__ = [
     "TestCase",
     "ExecutionStatus",
     "ExecutionResult",
+    "CourseReview"
 ]
