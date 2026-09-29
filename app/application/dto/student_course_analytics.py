@@ -22,6 +22,14 @@ class StudentWeakTaskDTO:
     attempts_count: int
 
 @dataclass(slots=True)
+class StudentWeakCodeTaskDTO:
+    code_task_id: UUID
+    section_id: UUID
+    attempts_count: int
+    timed_out_attempts_count: int
+    failed_attempts_count: int
+
+@dataclass(slots=True)
 class StudentCourseAnalyticsDTO:
     course_id: UUID
     course_title: str
@@ -35,3 +43,4 @@ class StudentCourseAnalyticsDTO:
     modules: list[StudentModuleAnalyticsDTO] = field(default_factory=list)
     weak_questions: list[StudentWeakQuestionDTO] = field(default_factory=list)
     weak_tasks: list[StudentWeakTaskDTO] = field(default_factory=list)
+    weak_code_tasks: list[StudentWeakCodeTaskDTO] = field(default_factory=list)
