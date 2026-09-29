@@ -73,6 +73,10 @@ from app.presentation.api.schemas.course_publication import (
     CoursePublicationErrorResponse,
     CoursePublicationIssueResponse
 )
+from app.presentation.api.schemas.course_reviews import (
+    UpsertCourseReviewRequest,
+    CourseReviewResponse,
+)
 from app.presentation.api.schemas.errors import ErrorResponse
 from app.presentation.api.schemas.profile import (
     UserProfileResponse,
@@ -175,5 +179,7 @@ __all__ = [
     "StudentModuleAnalyticsResponse",
     "StudentWeakQuestionResponse",
     "StudentWeakTaskResponse",
-    "StudentCourseAnalyticsResponse"
+    "StudentCourseAnalyticsResponse",
+    "UpsertCourseReviewRequest",
+    "CourseReviewResponse",
 ]
