@@ -5,6 +5,12 @@ from pydantic import BaseModel, ConfigDict
 from app.domain.entities.course import CourseDifficulty, CourseStatus
 
 
+class CourseRatingSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    average_rating: float
+    reviews_count: int
+
 class CourseCatalogCountersResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,7 +33,7 @@ class CourseCatalogItemResponse(BaseModel):
     difficulty: CourseDifficulty
     status: CourseStatus
     counters: CourseCatalogCountersResponse
-
+    rating: CourseRatingSummaryResponse
 
 class CourseCatalogSectionPreviewResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -59,4 +65,5 @@ class CourseCatalogCardResponse(BaseModel):
     difficulty: CourseDifficulty
     status: CourseStatus
     counters: CourseCatalogCountersResponse
+    rating: CourseRatingSummaryResponse
     modules: list[CourseCatalogModulePreviewResponse]
