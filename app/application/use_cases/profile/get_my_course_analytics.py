@@ -1,14 +1,17 @@
 from dataclasses import dataclass
 from uuid import UUID
+
 from app.application.dto.student_course_analytics import (
     StudentCourseAnalyticsDTO,
     StudentModuleAnalyticsDTO,
     StudentWeakQuestionDTO,
-    StudentWeakTaskDTO,
+    StudentWeakTaskDTO, StudentWeakCodeTaskDTO,
 )
 from app.application.exceptions import CourseNotFoundError, PermissionDeniedError
 from app.application.interfaces.unit_of_work import UnitOfWork
+from app.domain.entities import CodeSubmissionStatus
 from app.domain.entities.user import User
+
 
 @dataclass(slots=True)
 class GetMyCourseAnalyticsQuery:
@@ -39,6 +42,7 @@ class GetMyCourseAnalyticsUseCase:
             module_dtos: list[StudentModuleAnalyticsDTO] = []
             weak_question_dtos: list[StudentWeakQuestionDTO] = []
             weak_task_dtos: list[StudentWeakTaskDTO] = []
+            weak_code_task_dtos: list[StudentWeakCodeTaskDTO] = []
             completed_module_ids = set(progress.completed_module_ids if progress else [])
             completed_section_ids = set(progress.completed_section_ids if progress else [])
 
@@ -82,6 +86,31 @@ class GetMyCourseAnalyticsUseCase:
                                 )
                             )
 
+                    for code_task_id in section.code_task_ids:
+                        code_task_submissions = await self.uow.code_submissions.get_by_student_and_code_task(
+                            student_id=query.actor.id,
+                            code_task_id=code_task_id,
+                        )
+                        failed_attempts_count = sum(
+                            1 for submission in code_task_submissions
+                            if submission.status is CodeSubmissionStatus.FAILED
+                        )
+                        timed_out_attempts_count = sum(
+                            1 for submission in code_task_submissions
+                            if submission.status is CodeSubmissionStatus.ERROR
+                        )
+
+                        if len(code_task_submissions) > 1 or (failed_attempts_count > 0 or timed_out_attempts_count > 0):
+                            weak_code_task_dtos.append(
+                                StudentWeakCodeTaskDTO(
+                                    code_task_id=code_task_id,
+                                    section_id=section.id,
+                                    attempts_count=len(code_task_submissions),
+                                    timed_out_attempts_count=timed_out_attempts_count,
+                                    failed_attempts_count=failed_attempts_count,
+                                )
+                            )
+
                 module_dtos.append(
                     StudentModuleAnalyticsDTO(
                         module_id=module.id,
@@ -111,4 +140,5 @@ class GetMyCourseAnalyticsUseCase:
                 modules=module_dtos,
                 weak_questions=weak_question_dtos,
                 weak_tasks=weak_task_dtos,
+                weak_code_tasks=weak_code_task_dtos,
             )
