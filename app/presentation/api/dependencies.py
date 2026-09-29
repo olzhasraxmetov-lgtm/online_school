@@ -115,7 +115,7 @@ def get_get_course_use_case(
     )
 
 def get_upsert_course_review_use_case() -> UpsertCourseReviewUseCase:
-    return  (
+    return UpsertCourseReviewUseCase(
         uow=SqlAlchemyUnitOfWork(session_factory=SessionFactory)
     )
 
