@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.application.interfaces.repositories.code_submission_repository import CodeSubmissionRepository
 from app.domain.entities.code_submission import CodeSubmission
 from app.infrastructure.database.mappers.code_submission_mapper import CodeSubmissionMapper
-from app.infrastructure.database.mappers.code_task_mapper import CodeTaskMapper
 from app.infrastructure.database.models.code_submission_model import CodeSubmissionModel
 
 
@@ -17,6 +16,21 @@ class SqlAlchemyCodeSubmissionRepository(CodeSubmissionRepository):
     async def add(self, submission: CodeSubmission) -> None:
         self.session.add(CodeSubmissionMapper.to_model(submission))
         await self.session.flush()
+
+    async def get_by_student_and_code_task(
+            self,
+            student_id: UUID,
+            code_task_id: UUID,
+    ) -> list[CodeSubmission]:
+        stmt = (
+            select(CodeSubmissionModel)
+            .where(CodeSubmissionModel.student_id == str(student_id),
+                   CodeSubmissionModel.code_task_id == str(code_task_id))
+            .order_by(CodeSubmissionModel.attempt_number)
+        )
+        result = await self.session.execute(stmt)
+        return [CodeSubmissionMapper.to_domain(model) for model in result.scalars().all()]
+
 
     async def get_by_id(self, submission_id: UUID) -> CodeSubmission | None:
         model = await self.session.get(CodeSubmissionModel, str(submission_id))
