@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from app.application.dto.course_reviews import CourseRatingSummaryDTO
 from app.domain.entities.course import CourseStatus, CourseDifficulty
 
 
@@ -23,6 +24,7 @@ class CourseCatalogItemDTO:
     cover_image_url: str | None
     difficulty: CourseDifficulty
     counters: CourseCatalogCountersDTO
+    rating: CourseRatingSummaryDTO
 
 @dataclass(slots=True)
 class CourseCatalogSectionPreviewDTO:
@@ -49,4 +51,5 @@ class CourseCatalogCardDTO:
     difficulty: CourseDifficulty
     status: CourseStatus
     counters: CourseCatalogCountersDTO
+    rating: CourseRatingSummaryDTO
     modules: list[CourseCatalogModulePreviewDTO] = field(default_factory=list)
