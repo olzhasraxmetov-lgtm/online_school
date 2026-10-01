@@ -31,3 +31,6 @@ class LectureComment:
         self.text = text.strip()
         self.updated_at = datetime.now(UTC)
         self._validate()
+
+    def is_written_by(self, user_id: UUID) -> bool:
+        return self.user_id == user_id
