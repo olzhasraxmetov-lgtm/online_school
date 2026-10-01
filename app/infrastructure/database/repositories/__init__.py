@@ -3,6 +3,7 @@ from app.infrastructure.database.repositories.code_submission_repository import 
 from app.infrastructure.database.repositories.code_task_repository import SqlAlchemyCodeTaskRepository
 from app.infrastructure.database.repositories.course_repository import SqlAlchemyCourseRepository
 from app.infrastructure.database.repositories.course_review_repository import SqlAlchemyCourseReviewRepository
+from app.infrastructure.database.repositories.lecture_comment_repository import SqlAlchemyLectureCommentRepository
 from app.infrastructure.database.repositories.lecture_repository import SqlAlchemyLectureRepository
 from app.infrastructure.database.repositories.module_repository import SqlAlchemyModuleRepository
 from app.infrastructure.database.repositories.progress_repository import SqlAlchemyProgressRepository
@@ -29,5 +30,6 @@ __all__ = [
     "SqlAlchemyCodeTaskRepository",
     "SqlAlchemyCodeSubmissionRepository",
     "SqlAlchemyTestCaseRepository",
-    "SqlAlchemyCourseReviewRepository"
+    "SqlAlchemyCourseReviewRepository",
+    "SqlAlchemyLectureCommentRepository"
 ]

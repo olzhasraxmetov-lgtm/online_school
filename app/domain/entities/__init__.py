@@ -2,8 +2,10 @@ from app.domain.entities.answer_option import AnswerOption
 from app.domain.entities.code_submission import CodeSubmission, CodeSubmissionStatus
 from app.domain.entities.code_task import CodeTask, CodeTaskLanguage
 from app.domain.entities.course import Course
+from app.domain.entities.course_review import CourseReview
 from app.domain.entities.execution_result import ExecutionResult, ExecutionStatus
 from app.domain.entities.lecture import Lecture
+from app.domain.entities.lecture_comment import LectureComment
 from app.domain.entities.module import Module
 from app.domain.entities.progress import Progress
 from app.domain.entities.question import Question
@@ -12,7 +14,6 @@ from app.domain.entities.section import Section
 from app.domain.entities.task import Task
 from app.domain.entities.test_case import TestCase
 from app.domain.entities.user import UserRole, User
-from app.domain.entities.course_review import CourseReview
 
 __all__ = [
     "Course",
@@ -34,5 +35,6 @@ __all__ = [
     "TestCase",
     "ExecutionStatus",
     "ExecutionResult",
-    "CourseReview"
+    "CourseReview",
+    "LectureComment"
 ]
