@@ -11,6 +11,8 @@ from app.application.use_cases.courses.get_course_structure import GetCourseStru
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase, GetCoursesQuery
 from app.application.use_cases.lecture_comment.create_lecture_comment import CreateLectureCommentUseCase, \
     CreateLectureCommentCommand
+from app.application.use_cases.lecture_comment.delete_lecture_comment import DeleteLectureCommentUseCase, \
+    DeleteLectureCommentCommand
 from app.application.use_cases.lecture_comment.get_lecture_comment import GetLectureCommentsQuery, \
     GetLectureCommentsUseCase
 from app.application.use_cases.lecture_comment.update_lecture_comment import UpdateLectureCommentUseCase, \
@@ -25,6 +27,7 @@ from app.presentation.api.dependencies import (
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
     get_upsert_course_review_use_case, get_get_course_reviews_use_case, get_current_user,
     get_create_lecture_comment_use_case, get_get_lecture_comments_use_case, get_update_lecture_comment_use_case,
+    get_delete_lecture_comment_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse, CourseReviewResponse,
@@ -387,3 +390,41 @@ async def update_lecture_comment(
         )
     )
     return LectureCommentResponse.model_validate(result)
+
+@router.delete(
+    '/comments/{comment_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete selected comment by its id',
+    description=(
+            'Allowed for the comment author, the author of the course the lecture belongs to (moderation), and administrators. '
+            'The course author and administrators can delete other users\' comments, while authors of other courses cannot. '
+            'The author of the comment can delete it while the lecture is available. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'Only the comment author, the course author or an administrator can delete this comment.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture comment was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def delete_lecture_comment(
+        comment_id: UUID,
+        actor: User = Depends(get_current_user),
+        use_case: DeleteLectureCommentUseCase = Depends(
+            get_delete_lecture_comment_use_case,
+        ),
+) -> None:
+    await use_case.execute(
+        DeleteLectureCommentCommand(
+            actor=actor,
+            lecture_comment_id=comment_id,
+        )
+    )
