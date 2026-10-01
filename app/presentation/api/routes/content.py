@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Security, Query
+from fastapi import APIRouter, Depends, Security, Query, status
 
 from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase, GetCodeTaskQuery
 from app.application.use_cases.course_reviews.get_course_reviews import GetCourseReviewsQuery, GetCourseReviewsUseCase
@@ -9,6 +9,8 @@ from app.application.use_cases.course_reviews.upsert_course_review import Upsert
 from app.application.use_cases.courses.get_course import GetCourseUseCase, GetCourseQuery
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase, GetCourseStructureQuery
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase, GetCoursesQuery
+from app.application.use_cases.lecture_comment.create_lecture_comment import CreateLectureCommentUseCase, \
+    CreateLectureCommentCommand
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, GetLectureQuery
 from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
 from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
@@ -18,10 +20,11 @@ from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
     get_upsert_course_review_use_case, get_get_course_reviews_use_case, get_current_user,
+    get_create_lecture_comment_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse, CourseReviewResponse,
-    UpsertCourseReviewRequest,
+    UpsertCourseReviewRequest, LectureCommentResponse, CreateLectureCommentRequest,
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
@@ -257,3 +260,48 @@ async def upsert_my_course_review(
         )
     )
     return CourseReviewResponse.model_validate(result)
+
+
+@router.post(
+    '/lectures/{lecture_id}/comments',
+    response_model=LectureCommentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create a lecture comment',
+    description=(
+            'Create a lecture comment inside the selected lecture. '
+            'Only students can leave lecture comments if lecture is visible. '
+            'The text is limited to 2,000 characters. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': (
+                    'Only students can leave lecture comments.'
+            ),
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def create_lecture_comment(
+        lecture_id: UUID,
+        request: CreateLectureCommentRequest,
+        actor: User = Depends(get_current_user),
+        use_case: CreateLectureCommentUseCase = Depends(
+            get_create_lecture_comment_use_case,
+        ),
+) -> LectureCommentResponse:
+    result = await use_case.execute(
+        CreateLectureCommentCommand(
+            actor=actor,
+            text=request.text,
+            lecture_id=lecture_id
+        )
+    )
+    return LectureCommentResponse.model_validate(result)
