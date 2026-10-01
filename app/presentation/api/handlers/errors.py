@@ -8,7 +8,7 @@ from app.application.exceptions import (
     SectionNotFoundError, LectureNotFoundError,
     PermissionDeniedError as ApplicationPermissionDeniedError, QuestionNotFoundError, AnswerOptionNotFoundError,
     QuestionAttemptNotFoundError, TaskNotFoundError, CodeTaskNotFoundError, TestCaseNotFoundError,
-    CodeSubmissionNotFoundError, CoursePublicationNotReadyError, UploadImageError,
+    CodeSubmissionNotFoundError, CoursePublicationNotReadyError, UploadImageError, LectureCommentNotFoundError,
 )
 from app.domain.exceptions import DomainError
 from app.presentation.api.schemas import ErrorResponse
@@ -96,6 +96,13 @@ async def presentation_permission_denied_handler(
 async def question_not_found_handler(request: Request, exc: Exception) -> JSONResponse:
     return build_error_response(
         error="question_not_found",
+        message=str(exc),
+        status_code=status.HTTP_404_NOT_FOUND,
+    )
+
+async def comment_not_found_handler(request: Request, exc: Exception) -> JSONResponse:
+    return build_error_response(
+        error="lecture_comment_not_found",
         message=str(exc),
         status_code=status.HTTP_404_NOT_FOUND,
     )
@@ -213,5 +220,6 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(CodeTaskNotFoundError, code_task_not_found_handler)
     app.add_exception_handler(TestCaseNotFoundError, test_case_not_found_handler)
     app.add_exception_handler(CodeSubmissionNotFoundError, code_submission_not_found_handler)
+    app.add_exception_handler(LectureCommentNotFoundError, comment_not_found_handler)
     app.add_exception_handler(CoursePublicationNotReadyError, course_publication_not_ready_handler)
     app.add_exception_handler(UploadImageError, upload_image_error_handler)
