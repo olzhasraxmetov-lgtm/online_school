@@ -31,6 +31,7 @@ from app.application.use_cases.courses.publish_course import PublishCourseUseCas
 from app.application.use_cases.courses.update_course import UpdateCourseUseCase
 from app.application.use_cases.courses.upload_course_image import CourseImageUploadUseCase
 from app.application.use_cases.lecture_comment.create_lecture_comment import CreateLectureCommentUseCase
+from app.application.use_cases.lecture_comment.get_lecture_comment import GetLectureCommentsUseCase
 from app.application.use_cases.lectures.create_lecture import CreateLectureUseCase
 from app.application.use_cases.lectures.delete_lecture import DeleteLectureUseCase
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase
@@ -327,6 +328,18 @@ def get_create_lecture_comment_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> CreateLectureCommentUseCase:
     return CreateLectureCommentUseCase(
+        uow=uow,
+        access_service=CourseContentAccessService(
+            course_repository=uow.courses,
+            module_repository=uow.modules,
+            section_repository=uow.sections,
+        )
+    )
+
+def get_get_lecture_comments_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetLectureCommentsUseCase:
+    return GetLectureCommentsUseCase(
         uow=uow,
         access_service=CourseContentAccessService(
             course_repository=uow.courses,
