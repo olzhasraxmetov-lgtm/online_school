@@ -11,6 +11,8 @@ from app.application.use_cases.courses.get_course_structure import GetCourseStru
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase, GetCoursesQuery
 from app.application.use_cases.lecture_comment.create_lecture_comment import CreateLectureCommentUseCase, \
     CreateLectureCommentCommand
+from app.application.use_cases.lecture_comment.get_lecture_comment import GetLectureCommentsQuery, \
+    GetLectureCommentsUseCase
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, GetLectureQuery
 from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
 from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
@@ -20,7 +22,7 @@ from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
     get_upsert_course_review_use_case, get_get_course_reviews_use_case, get_current_user,
-    get_create_lecture_comment_use_case,
+    get_create_lecture_comment_use_case, get_get_lecture_comments_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse, CourseReviewResponse,
@@ -305,3 +307,40 @@ async def create_lecture_comment(
         )
     )
     return LectureCommentResponse.model_validate(result)
+
+@router.get(
+    '/lectures/{lecture_id}/comments',
+    response_model=list[LectureCommentResponse],
+    summary='Get list of lecture comments by lecture_id',
+    description=(
+            'Returns list of lecture comments by lecture_id. '
+            'Only authorized users can view lecture comments. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_lecture_comments(
+        lecture_id: UUID,
+        actor: User = Depends(get_current_user),
+        use_case: GetLectureCommentsUseCase = Depends(
+            get_get_lecture_comments_use_case,
+        ),
+) -> list[LectureCommentResponse]:
+    result = await use_case.execute(
+        GetLectureCommentsQuery(
+            actor=actor,
+            lecture_id=lecture_id,
+        )
+    )
+    return [
+        LectureCommentResponse.model_validate(lecture_comment)
+        for lecture_comment in result
+    ]
