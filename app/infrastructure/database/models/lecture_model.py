@@ -7,6 +7,7 @@ from app.infrastructure.database.models.base import Base
 
 if TYPE_CHECKING:
     from section_model import SectionModel
+    from lecture_comment_model import LectureCommentModel
 
 class LectureModel(Base):
     __tablename__ = "lectures"
@@ -18,3 +19,9 @@ class LectureModel(Base):
     position: Mapped[int] = mapped_column(Integer)
 
     section: Mapped["SectionModel"] = relationship("SectionModel", back_populates="lectures")
+    lecture_comments: Mapped[list['LectureCommentModel']] = relationship(
+        'LectureCommentModel',
+        back_populates='lecture',
+        cascade='all, delete-orphan',
+        order_by='LectureCommentModel.id',
+    )
