@@ -13,6 +13,8 @@ from app.application.use_cases.lecture_comment.create_lecture_comment import Cre
     CreateLectureCommentCommand
 from app.application.use_cases.lecture_comment.get_lecture_comment import GetLectureCommentsQuery, \
     GetLectureCommentsUseCase
+from app.application.use_cases.lecture_comment.update_lecture_comment import UpdateLectureCommentUseCase, \
+    UpdateLectureCommentCommand
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, GetLectureQuery
 from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
 from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
@@ -22,11 +24,11 @@ from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
     get_upsert_course_review_use_case, get_get_course_reviews_use_case, get_current_user,
-    get_create_lecture_comment_use_case, get_get_lecture_comments_use_case,
+    get_create_lecture_comment_use_case, get_get_lecture_comments_use_case, get_update_lecture_comment_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse, CourseReviewResponse,
-    UpsertCourseReviewRequest, LectureCommentResponse, CreateLectureCommentRequest,
+    UpsertCourseReviewRequest, LectureCommentResponse, CreateLectureCommentRequest, UpdateLectureCommentRequest,
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
@@ -344,3 +346,44 @@ async def get_lecture_comments(
         LectureCommentResponse.model_validate(lecture_comment)
         for lecture_comment in result
     ]
+
+@router.patch(
+    '/comments/{comment_id}',
+    response_model=LectureCommentResponse,
+    summary='Update selected comment by its id',
+    description=(
+            'The author of the comment can change it. '
+            'Author of the course and admin cannot change it. '
+            'The author of comment can change it while the lecture is available. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'Only the author of comment can change it.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture comment was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def update_lecture_comment(
+        comment_id: UUID,
+        request: UpdateLectureCommentRequest,
+        actor: User = Depends(get_current_user),
+        use_case: UpdateLectureCommentUseCase = Depends(
+            get_update_lecture_comment_use_case,
+        ),
+) -> LectureCommentResponse:
+    result = await use_case.execute(
+        UpdateLectureCommentCommand(
+            actor=actor,
+            text=request.text,
+            lecture_comment_id=comment_id,
+        )
+    )
+    return LectureCommentResponse.model_validate(result)
