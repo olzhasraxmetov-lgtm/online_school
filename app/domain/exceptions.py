@@ -93,3 +93,6 @@ class InvalidCoverImageError(DomainError):
 
 class InvalidCourseReviewError(DomainError):
     pass
+
+class InvalidLectureCommentError(DomainError):
+    pass

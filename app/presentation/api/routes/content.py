@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Security, Query
+from fastapi import APIRouter, Depends, Security, Query, status
 
 from app.application.use_cases.code_task.get_code_task import GetCodeTaskUseCase, GetCodeTaskQuery
 from app.application.use_cases.course_reviews.get_course_reviews import GetCourseReviewsQuery, GetCourseReviewsUseCase
@@ -9,6 +9,14 @@ from app.application.use_cases.course_reviews.upsert_course_review import Upsert
 from app.application.use_cases.courses.get_course import GetCourseUseCase, GetCourseQuery
 from app.application.use_cases.courses.get_course_structure import GetCourseStructureUseCase, GetCourseStructureQuery
 from app.application.use_cases.courses.get_courses import GetCoursesUseCase, GetCoursesQuery
+from app.application.use_cases.lecture_comment.create_lecture_comment import CreateLectureCommentUseCase, \
+    CreateLectureCommentCommand
+from app.application.use_cases.lecture_comment.delete_lecture_comment import DeleteLectureCommentUseCase, \
+    DeleteLectureCommentCommand
+from app.application.use_cases.lecture_comment.get_lecture_comment import GetLectureCommentsQuery, \
+    GetLectureCommentsUseCase
+from app.application.use_cases.lecture_comment.update_lecture_comment import UpdateLectureCommentUseCase, \
+    UpdateLectureCommentCommand
 from app.application.use_cases.lectures.get_lecture import GetLectureUseCase, GetLectureQuery
 from app.application.use_cases.question.get_question import GetQuestionUseCase, GetQuestionQuery
 from app.application.use_cases.tasks.get_task import GetTaskQuery, GetTaskUseCase
@@ -18,10 +26,12 @@ from app.presentation.api.dependencies import (
     get_get_course_use_case, get_get_courses_use_case, get_get_course_structure_use_case, get_get_lecture_use_case,
     get_get_code_task_use_case, get_get_task_use_case, get_get_question_use_case, get_current_user_or_none,
     get_upsert_course_review_use_case, get_get_course_reviews_use_case, get_current_user,
+    get_create_lecture_comment_use_case, get_get_lecture_comments_use_case, get_update_lecture_comment_use_case,
+    get_delete_lecture_comment_use_case,
 )
 from app.presentation.api.schemas import (
     ErrorResponse, CourseCatalogItemResponse, CourseCatalogCardResponse, CourseReviewResponse,
-    UpsertCourseReviewRequest,
+    UpsertCourseReviewRequest, LectureCommentResponse, CreateLectureCommentRequest, UpdateLectureCommentRequest,
 )
 from app.presentation.api.schemas.content.content_details import CodeTaskDetailsResponse, TaskDetailsResponse, \
     QuestionDetailsResponse
@@ -257,3 +267,164 @@ async def upsert_my_course_review(
         )
     )
     return CourseReviewResponse.model_validate(result)
+
+
+@router.post(
+    '/lectures/{lecture_id}/comments',
+    response_model=LectureCommentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create a lecture comment',
+    description=(
+            'Create a lecture comment inside the selected lecture. '
+            'Only students can leave lecture comments if lecture is visible. '
+            'The text is limited to 2,000 characters. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': (
+                    'Only students can leave lecture comments.'
+            ),
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def create_lecture_comment(
+        lecture_id: UUID,
+        request: CreateLectureCommentRequest,
+        actor: User = Depends(get_current_user),
+        use_case: CreateLectureCommentUseCase = Depends(
+            get_create_lecture_comment_use_case,
+        ),
+) -> LectureCommentResponse:
+    result = await use_case.execute(
+        CreateLectureCommentCommand(
+            actor=actor,
+            text=request.text,
+            lecture_id=lecture_id
+        )
+    )
+    return LectureCommentResponse.model_validate(result)
+
+@router.get(
+    '/lectures/{lecture_id}/comments',
+    response_model=list[LectureCommentResponse],
+    summary='Get list of lecture comments by lecture_id',
+    description=(
+            'Returns list of lecture comments by lecture_id. '
+            'Only authorized users can view lecture comments. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_lecture_comments(
+        lecture_id: UUID,
+        actor: User = Depends(get_current_user),
+        use_case: GetLectureCommentsUseCase = Depends(
+            get_get_lecture_comments_use_case,
+        ),
+) -> list[LectureCommentResponse]:
+    result = await use_case.execute(
+        GetLectureCommentsQuery(
+            actor=actor,
+            lecture_id=lecture_id,
+        )
+    )
+    return [
+        LectureCommentResponse.model_validate(lecture_comment)
+        for lecture_comment in result
+    ]
+
+@router.patch(
+    '/comments/{comment_id}',
+    response_model=LectureCommentResponse,
+    summary='Update selected comment by its id',
+    description=(
+            'The author of the comment can change it. '
+            'Author of the course and admin cannot change it. '
+            'The author of comment can change it while the lecture is available. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'Only the author of comment can change it.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture comment was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def update_lecture_comment(
+        comment_id: UUID,
+        request: UpdateLectureCommentRequest,
+        actor: User = Depends(get_current_user),
+        use_case: UpdateLectureCommentUseCase = Depends(
+            get_update_lecture_comment_use_case,
+        ),
+) -> LectureCommentResponse:
+    result = await use_case.execute(
+        UpdateLectureCommentCommand(
+            actor=actor,
+            text=request.text,
+            lecture_comment_id=comment_id,
+        )
+    )
+    return LectureCommentResponse.model_validate(result)
+
+@router.delete(
+    '/comments/{comment_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete selected comment by its id',
+    description=(
+            'Allowed for the comment author, the author of the course the lecture belongs to (moderation), and administrators. '
+            'The course author and administrators can delete other users\' comments, while authors of other courses cannot. '
+            'The author of the comment can delete it while the lecture is available. '
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+        403: {
+            'description': 'Only the comment author, the course author or an administrator can delete this comment.',
+            'model': ErrorResponse,
+        },
+        404: {
+            'description': 'Lecture comment was not found.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def delete_lecture_comment(
+        comment_id: UUID,
+        actor: User = Depends(get_current_user),
+        use_case: DeleteLectureCommentUseCase = Depends(
+            get_delete_lecture_comment_use_case,
+        ),
+) -> None:
+    await use_case.execute(
+        DeleteLectureCommentCommand(
+            actor=actor,
+            lecture_comment_id=comment_id,
+        )
+    )

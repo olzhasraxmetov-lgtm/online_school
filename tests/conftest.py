@@ -27,7 +27,7 @@ from app.infrastructure.database.models import (
     TaskAttemptModel,
     TaskModel,
     TestCaseModel, CourseReviewModel,
-
+    LectureCommentModel
 )
 from app.infrastructure.database.models import ModuleModel
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -93,12 +93,16 @@ async def clear_database(session_factory) -> None:
             TaskModel,
             TestCaseModel,
             CourseReviewModel,
+            LectureCommentModel
         ]:
             await session.execute(delete(model))
         await session.commit()
 
-@pytest_asyncio.fixture
-async def seeded_course_tree(session_factory, seeded_admin_user):
+async def build_course_tree(
+        session_factory,
+        author_id: str,
+        status: str = 'published',
+) -> SimpleNamespace:
     course_id = str(uuid4())
     module_id = str(uuid4())
     section_id = str(uuid4())
@@ -107,14 +111,14 @@ async def seeded_course_tree(session_factory, seeded_admin_user):
     async with session_factory() as session:
         course = CourseModel(
             id=course_id,
-            author_id=seeded_admin_user.id,
+            author_id=author_id,
             title='FastAPI course',
             description='Clean architecture in practice.',
             short_description='Build a production-ready learning backend.',
             cover_image_url='https://example.com/fastapi-course-cover.png',
             difficulty='intermediate',
             tag_names=['fastapi', 'backend', 'architecture'],
-            status='published',
+            status=status,
         )
         module = ModuleModel(
             id=module_id,
@@ -139,20 +143,46 @@ async def seeded_course_tree(session_factory, seeded_admin_user):
         )
         session.add_all([course, module, section, lecture])
         await session.commit()
-        return SimpleNamespace(
-            course_id=course_id,
-            module_id=module_id,
-            section_id=section_id,
-            lecture_id=lecture_id,
-            course_title='FastAPI course',
-            course_short_description='Build a production-ready learning backend.',
-            course_cover_image_url='https://example.com/fastapi-course-cover.png',
-            course_difficulty='intermediate',
-            course_tag_names=['fastapi', 'backend', 'architecture'],
-            course_average_rating=0.0,
-            course_reviews_count=0,
-            lecture_content='Lecture content',
-        )
+
+    return SimpleNamespace(
+        course_id=course_id,
+        module_id=module_id,
+        section_id=section_id,
+        lecture_id=lecture_id,
+        course_title='FastAPI course',
+        course_short_description='Build a production-ready learning backend.',
+        course_cover_image_url='https://example.com/fastapi-course-cover.png',
+        course_difficulty='intermediate',
+        course_tag_names=['fastapi', 'backend', 'architecture'],
+        course_average_rating=0.0,
+        course_reviews_count=0,
+        lecture_content='Lecture content',
+    )
+
+
+@pytest_asyncio.fixture
+async def seeded_course_tree(session_factory, seeded_admin_user):
+    return await build_course_tree(
+        session_factory,
+        author_id=seeded_admin_user.id,
+    )
+
+
+@pytest_asyncio.fixture
+async def seeded_author_course_tree(session_factory, seeded_author_user):
+    return await build_course_tree(
+        session_factory,
+        author_id=seeded_author_user.id,
+    )
+
+
+@pytest_asyncio.fixture
+async def seeded_draft_course_tree(session_factory, seeded_author_user):
+    return await build_course_tree(
+        session_factory,
+        author_id=seeded_author_user.id,
+        status='draft',
+    )
 
 @pytest_asyncio.fixture
 async def seeded_code_submission(session_factory, seeded_tasks_tree, seeded_student_user):
@@ -353,6 +383,18 @@ async def student_auth_headers(client, seeded_student_user):
         json={
             "email": "student@example.com",
             "password": "new_password1234",
+        }
+    )
+    token = response.json()['access_token']
+    return {'Authorization': f'Bearer {token}'}
+
+@pytest_asyncio.fixture
+async def other_student_auth_headers(client, seeded_other_student_user):
+    response = await client.post(
+        'api/auth/login',
+        json={
+            "email": "student_other@example.com",
+            "password": "strongpassword123",
         }
     )
     token = response.json()['access_token']

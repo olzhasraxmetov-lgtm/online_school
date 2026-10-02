@@ -7,6 +7,7 @@ from app.infrastructure.database.models.base import Base
 
 if TYPE_CHECKING:
     from course_model import CourseModel
+    from lecture_comment_model import LectureCommentModel
 
 class UserModel(Base):
     __tablename__ = "users"
@@ -21,5 +22,10 @@ class UserModel(Base):
     courses: Mapped['CourseModel'] = relationship(
         'CourseModel',
         back_populates='author',
+        cascade='all, delete-orphan',
+    )
+    lecture_comments: Mapped[list['LectureCommentModel']] = relationship(
+        'LectureCommentModel',
+        back_populates='user',
         cascade='all, delete-orphan',
     )
