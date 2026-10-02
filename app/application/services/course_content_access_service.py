@@ -25,7 +25,7 @@ class CourseContentAccessService:
     ) -> bool:
         course = await self.course_repository.get_by_id(course_id)
         if course is None:
-            raise False
+            return False
 
         return self.is_course_visible_to(course=course, actor=actor)
 
