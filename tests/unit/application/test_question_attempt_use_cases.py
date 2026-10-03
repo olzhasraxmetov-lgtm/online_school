@@ -8,7 +8,7 @@ from app.application.use_cases.question_attempts.start_question_attempt import S
     StartQuestionAttemptCommand
 from app.application.use_cases.question_attempts.submit_question_answer import SubmitQuestionAnswerUseCase, \
     SubmitQuestionAnswerCommand
-from app.domain.entities import Progress, Course, Module, Section
+from app.domain.entities import Progress, Course, Module, Section, StudentActivity, StudentActivityType
 from app.domain.entities.answer_option import AnswerOption
 from app.domain.entities.question import Question, QuestionType
 from app.domain.entities.question_attempt import QuestionAttempt, QuestionResultStatus
@@ -122,6 +122,14 @@ class FakeSectionRepository:
     async def update(self, section: Section) -> None:
         self.items[section.id] = section
 
+class FakeStudentActivityRepository:
+    def __init__(self) -> None:
+        self.items: list[StudentActivity] = []
+
+    async def add(self, activity: StudentActivity) -> None:
+        self.items.append(activity)
+
+
 class FakeInteractiveUnitOfWork:
     def __init__(self) -> None:
         self.courses = FakeCourseRepository()
@@ -131,6 +139,7 @@ class FakeInteractiveUnitOfWork:
         self.answer_options = FakeAnswerOptionRepository()
         self.question_attempts = FakeQuestionAttemptRepository()
         self.progress = FakeProgressRepository()
+        self.student_activities = FakeStudentActivityRepository()
         self.committed = False
         self.rolled_back = False
 
@@ -256,6 +265,10 @@ async def test_submit_question_answer_creates_attempt_and_updates_progress() -> 
     # assert module.id in progress.completed_module_ids
     assert progress.total_points == 5
     assert uow.committed is True
+
+    activity_types = [activity.activity_type for activity in uow.student_activities.items]
+    assert activity_types[0] is StudentActivityType.QUESTION_COMPLETED
+    assert StudentActivityType.SECTION_COMPLETED in activity_types
 
 
 @pytest.mark.asyncio
