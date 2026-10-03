@@ -42,7 +42,7 @@ class GetCourseUseCase:
             raise CourseNotFoundError("Course not found.")
 
         can_use_public_cache = (
-            query.actor is not None
+            query.actor is None
             and course.is_publicly_visible()
             and self.content_cache is not None
         )
