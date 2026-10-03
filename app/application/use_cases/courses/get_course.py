@@ -30,7 +30,7 @@ class GetCourseUseCase:
 
     async def execute(self, query: GetCourseQuery) -> CourseCatalogCardDTO:
         course = await self.course_repository.get_by_id(query.course_id)
-        if course is None or not course.is_publicly_visible():
+        if course is None:
             raise CourseNotFoundError("Course not found.")
 
         can_view = await self.access_service.can_view_course(
