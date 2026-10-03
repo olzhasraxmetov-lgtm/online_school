@@ -57,6 +57,11 @@ class Settings(BaseSettings):
         validation_alias="SUBMISSION_QUEUE_NAME"
     )
 
+    content_cache_ttl_seconds: int = Field(
+        default=300,
+        validation_alias='CONTENT_CACHE_TTL_SECONDS',
+    )
+
     @property
     def api(self) -> ApiSettings:
         return ApiSettings(
