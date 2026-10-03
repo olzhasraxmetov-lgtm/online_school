@@ -99,6 +99,10 @@ from app.presentation.api.schemas.question_attempts import (
     SubmitQuestionAnswerRequest,
     QuestionAttemptResultResponse
 )
+from app.presentation.api.schemas.student_activity import (
+    StudentActivityResponse,
+    StudentActivityPageResponse
+)
 from app.presentation.api.schemas.student_analytics import (
     StudentModuleAnalyticsResponse,
     StudentWeakQuestionResponse,
@@ -190,4 +194,6 @@ __all__ = [
     "LectureCommentResponse",
     "CreateLectureCommentRequest",
     "UpdateLectureCommentRequest",
+    "StudentActivityResponse",
+    "StudentActivityPageResponse"
 ]

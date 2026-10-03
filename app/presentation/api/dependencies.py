@@ -41,6 +41,7 @@ from app.application.use_cases.lectures.update_lecture import UpdateLectureUseCa
 from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
+from app.application.use_cases.profile.get_my_activities import GetMyActivitiesUseCase
 from app.application.use_cases.profile.get_my_course_analytics import GetMyCourseAnalyticsUseCase
 from app.application.use_cases.profile.get_my_profile import GetMyProfileUseCase
 from app.application.use_cases.profile.get_my_teaching_course_analytics import GetMyTeachingCourseAnalyticsUseCase
@@ -337,6 +338,11 @@ def get_create_lecture_comment_use_case(
             section_repository=uow.sections,
         )
     )
+
+def get_get_my_activities_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetMyActivitiesUseCase:
+    return GetMyActivitiesUseCase(uow=uow)
 
 def get_update_lecture_comment_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
