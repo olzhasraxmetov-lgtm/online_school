@@ -32,6 +32,7 @@ from app.infrastructure.database.models import (
 from app.infrastructure.database.models import ModuleModel
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
 from app.main import create_app
+from tests.fakes.in_memory_content_cache import InMemoryContentCache
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -58,15 +59,23 @@ def session_factory(test_engine):
         class_=AsyncSession,
     )
 
+@pytest.fixture
+def content_cache() -> InMemoryContentCache:
+    return InMemoryContentCache()
+
+
 @pytest_asyncio.fixture
-async def app(session_factory):
+async def app(session_factory, content_cache):
     app = create_app()
     original_session_factory = api_dependencies.SessionFactory
+    original_build_content_cache = api_dependencies.build_content_cache
     api_dependencies.SessionFactory = session_factory
+    api_dependencies.build_content_cache = lambda: content_cache
     try:
         yield app
     finally:
         api_dependencies.SessionFactory = original_session_factory
+        api_dependencies.build_content_cache = original_build_content_cache
 
 @pytest_asyncio.fixture
 async def client(app) -> AsyncIterator[AsyncClient]:
