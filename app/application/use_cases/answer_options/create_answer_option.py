@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 from app.application.exceptions import QuestionNotFoundError, QuestionAlreadyUsedError
+from app.application.interfaces.content_cache import ContentCache
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities.answer_option import AnswerOption
@@ -17,9 +18,10 @@ class CreateAnswerOptionCommand:
     is_correct: bool = False
 
 class CreateAnswerOptionUseCase:
-    def __init__(self, uow: UnitOfWork) -> None:
+    def __init__(self, uow: UnitOfWork, content_cache: ContentCache | None = None) -> None:
         self.uow = uow
         self.course_access_service = CourseAccessService(uow)
+        self.content_cache = content_cache
 
     async def execute(self, command: CreateAnswerOptionCommand) -> AnswerOption:
         async with self.uow:
@@ -27,10 +29,12 @@ class CreateAnswerOptionUseCase:
             if question is None:
                 raise QuestionNotFoundError(f"Question not found")
 
-            await self.course_access_service.ensure_can_manage_section(
+            section = await self.course_access_service.ensure_can_manage_section(
                 actor=command.actor,
                 section_id=question.section_id,
             )
+
+            module = await self.uow.modules.get_by_id(section.module_id)
 
             has_attempts = await self.uow.question_attempts.exists_by_question_id(question.id)
             if has_attempts:
@@ -50,4 +54,10 @@ class CreateAnswerOptionUseCase:
             await self.uow.answer_options.add(answer_option)
             await self.uow.questions.update(question)
             await self.uow.commit()
+
+            if self.content_cache is not None:
+                await self.content_cache.invalidate_course(
+                    module.course_id
+                )
+
             return answer_option

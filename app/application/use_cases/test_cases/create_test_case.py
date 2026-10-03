@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from app.application.exceptions import CodeTaskNotFoundError
+from app.application.interfaces.content_cache import ContentCache
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities import TestCase
@@ -19,9 +20,10 @@ class CreateTestCaseCommand:
     explanation: str = ''
 
 class CreateTestCaseUseCase:
-    def __init__(self, uow: UnitOfWork):
+    def __init__(self, uow: UnitOfWork, content_cache: ContentCache | None = None):
         self.uow = uow
         self.course_access_service = CourseAccessService(self.uow)
+        self.content_cache = content_cache
 
     async def execute(self, command: CreateTestCaseCommand) -> TestCase:
         async with self.uow:
@@ -29,10 +31,12 @@ class CreateTestCaseUseCase:
             if code_task is None:
                 raise CodeTaskNotFoundError('CodeTask not found.')
 
-            await self.course_access_service.ensure_can_manage_section(
+            section = await self.course_access_service.ensure_can_manage_section(
                 actor=command.actor,
                 section_id=code_task.section_id,
             )
+
+            module = await self.uow.modules.get_by_id(section.module_id)
 
             test_case = code_task.create_test_case(
                 position=command.position,
@@ -44,4 +48,10 @@ class CreateTestCaseUseCase:
             await self.uow.test_cases.add(test_case)
             await self.uow.code_tasks.update(code_task)
             await self.uow.commit()
+
+            if self.content_cache is not None:
+                await self.content_cache.invalidate_course(
+                    module.course_id
+                )
+
             return test_case

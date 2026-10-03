@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
+from app.application.interfaces.content_cache import ContentCache
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities.code_task import CodeTaskLanguage, CodeTask
@@ -22,9 +23,10 @@ class CreateCodeTaskCommand:
     memory_limit_mb: int = 128
 
 class CreateCodeTaskUseCase:
-    def __init__(self, uow: UnitOfWork):
+    def __init__(self, uow: UnitOfWork, content_cache: ContentCache | None = None):
         self.uow = uow
         self.course_access_service = CourseAccessService(uow)
+        self.content_cache = content_cache
 
     async def execute(self, command: CreateCodeTaskCommand) -> CodeTask:
         async with self.uow:
@@ -32,6 +34,8 @@ class CreateCodeTaskUseCase:
                 actor=command.actor,
                 section_id=command.section_id,
             )
+
+            module = await self.uow.modules.get_by_id(section.module_id)
 
             code_task = CodeTask(
                 id=uuid4(),
@@ -51,4 +55,10 @@ class CreateCodeTaskUseCase:
             await self.uow.code_tasks.add(code_task)
             await self.uow.sections.update(section)
             await self.uow.commit()
+
+            if self.content_cache is not None:
+                await self.content_cache.invalidate_course(
+                    module.course_id
+                )
+
             return code_task

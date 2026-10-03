@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from uuid import uuid4, UUID
 
+from app.application.interfaces.content_cache import ContentCache
 from app.application.interfaces.unit_of_work import UnitOfWork
 from app.application.services.course_access_service import CourseAccessService
 from app.domain.entities.task import TaskCheckType, Task
@@ -22,9 +23,10 @@ class CreateTaskCommand:
     reward_points: int = 1
 
 class CreateTaskUseCase:
-    def __init__(self, uow: UnitOfWork) -> None:
+    def __init__(self, uow: UnitOfWork, content_cache: ContentCache | None = None) -> None:
         self.uow = uow
         self.course_access_service = CourseAccessService(uow)
+        self.content_cache = content_cache
 
     async def execute(self, command: CreateTaskCommand) -> Task:
         async with self.uow:
@@ -32,6 +34,7 @@ class CreateTaskUseCase:
                 actor=command.actor,
                 section_id=command.section_id,
             )
+            module = await self.uow.modules.get_by_id(section.module_id)
 
             task = Task(
                 id=uuid4(),
@@ -50,4 +53,10 @@ class CreateTaskUseCase:
             await self.uow.tasks.add(task)
             await self.uow.sections.update(section)
             await self.uow.commit()
+
+            if self.content_cache is not None:
+                await self.content_cache.invalidate_course(
+                    module.course_id
+                )
+
             return task
