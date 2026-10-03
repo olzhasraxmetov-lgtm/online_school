@@ -27,7 +27,7 @@ from app.infrastructure.database.models import (
     TaskAttemptModel,
     TaskModel,
     TestCaseModel, CourseReviewModel,
-    LectureCommentModel
+    LectureCommentModel, StudentActivityModel
 )
 from app.infrastructure.database.models import ModuleModel
 from app.infrastructure.security.password_hasher import PwdlibPasswordHasher
@@ -85,6 +85,7 @@ async def clear_database(session_factory) -> None:
             LectureModel,
             SectionModel,
             ModuleModel,
+            StudentActivityModel,
             CourseModel,
             UserModel,
             CodeTaskModel,
