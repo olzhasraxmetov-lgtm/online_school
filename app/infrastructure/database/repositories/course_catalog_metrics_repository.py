@@ -180,4 +180,4 @@ class SqlAlchemyCourseCatalogMetricsRepository(
                 ),
             )
 
-            return metrics
+        return metrics
