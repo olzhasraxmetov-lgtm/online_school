@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from app.application.dto.course_reviews import CourseReviewDTO
 from app.application.exceptions import CourseNotFoundError, PermissionDeniedError
 from app.application.interfaces.unit_of_work import UnitOfWork
-from app.domain.entities import CourseReview
+from app.domain.entities import CourseReview, StudentActivity, StudentActivityType
 from app.domain.entities.user import User
 
 
@@ -56,6 +56,7 @@ class UpsertCourseReviewUseCase:
                 course_id=course.id,
             )
 
+            is_new_review = review is None
             if review is None:
                 review = CourseReview(
                     id=uuid4(),
@@ -64,10 +65,28 @@ class UpsertCourseReviewUseCase:
                     rating=command.rating,
                     text=command.text,
                 )
-                await  self.uow.course_reviews.add(review)
+                await self.uow.course_reviews.add(review)
             else:
                 review.update(rating=command.rating, text=command.text)
                 await self.uow.course_reviews.update(review)
+
+            await self.uow.student_activities.add(
+                StudentActivity(
+                    id=uuid4(),
+                    student_id=command.actor.id,
+                    course_id=course.id,
+                    activity_type=(
+                        StudentActivityType.COURSE_REVIEW_CREATED
+                        if is_new_review
+                        else StudentActivityType.COURSE_REVIEW_UPDATED
+                    ),
+                    entity_id=review.id,
+                    title=course.title,
+                    details={
+                        'rating': review.rating,
+                    },
+                )
+            )
 
             await self.uow.commit()
 

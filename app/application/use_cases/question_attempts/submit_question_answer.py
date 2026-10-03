@@ -3,7 +3,8 @@ from uuid import UUID, uuid4
 
 from app.application.exceptions import PermissionDeniedError, QuestionNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
-from app.domain.entities import Progress
+from app.application.services.student_activity_service import StudentActivityService
+from app.domain.entities import Progress, StudentActivity, StudentActivityType
 from app.domain.entities.question_attempt import QuestionAttempt
 from app.domain.entities.user import User
 
@@ -18,6 +19,7 @@ class SubmitQuestionAnswerCommand:
 class SubmitQuestionAnswerUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
+        self.student_activity_service = StudentActivityService(uow)
 
     async def execute(self, command: SubmitQuestionAnswerCommand) -> QuestionAttempt:
         if not command.actor.can_take_learning_activities():
@@ -91,10 +93,28 @@ class SubmitQuestionAnswerUseCase:
 
                 progress_changed = progress.apply_correct_attempt(attempt)
                 if progress_changed:
-                    progress.sync_section_completion(section)
-                    progress.sync_module_completion(module)
+                    activity = StudentActivity(
+                        id=uuid4(),
+                        student_id=command.actor.id,
+                        course_id=module.course_id,
+                        activity_type=StudentActivityType.QUESTION_COMPLETED,
+                        entity_id=question.id,
+                        title=question.text,
+                        details={
+                            'awarded_points': attempt.awarded_points,
+                        },
+                    )
 
-                    if  progress_is_new:
+                    await self.uow.student_activities.add(activity)
+
+                    await self.student_activity_service.record_structure_completion(
+                        progress=progress,
+                        section=section,
+                        module=module,
+                        student_id=command.actor.id,
+                    )
+
+                    if progress_is_new:
                         await self.uow.progress.add(progress)
                     else:
                         await self.uow.progress.update(progress)

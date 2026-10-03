@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from app.domain.entities import Progress
+from app.domain.entities import Progress, StudentActivity, StudentActivityType
 from app.domain.entities.execution_result import ExecutionStatus
 
 
@@ -18,12 +18,14 @@ class CompleteCodeSubmissionCommand:
 
 from app.application.exceptions import CodeSubmissionNotFoundError, CodeTaskNotFoundError
 from app.application.interfaces.unit_of_work import UnitOfWork
+from app.application.services.student_activity_service import StudentActivityService
 from app.domain.entities.execution_result import ExecutionResult
 
 
 class CompleteCodeSubmissionUseCase:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
+        self.student_activity_service = StudentActivityService(uow)
 
     async def execute(self, command: CompleteCodeSubmissionCommand):
         async with self.uow:
@@ -66,17 +68,44 @@ class CompleteCodeSubmissionUseCase:
                     course_id=module.course_id,
                 )
 
+                progress_is_new = progress is None
                 if progress is None:
                     progress = Progress(
                         id=uuid4(),
                         student_id=submission.student_id,
                         course_id=module.course_id,
                     )
-                    await self.uow.progress.add(progress)
 
-                progress.complete_code_task(code_task.id, code_task.reward_points)
-                progress.sync_section_completion(section)
-                progress.sync_module_completion(module)
-                await self.uow.progress.update(progress)
+                progress_changed = progress.complete_code_task(
+                    code_task.id,
+                    code_task.reward_points,
+                )
+                if progress_changed:
+                    await self.uow.student_activities.add(
+                        StudentActivity(
+                            id=uuid4(),
+                            student_id=submission.student_id,
+                            course_id=module.course_id,
+                            activity_type=StudentActivityType.CODE_TASK_COMPLETED,
+                            entity_id=code_task.id,
+                            title=code_task.title,
+                            details={
+                                'awarded_points': code_task.reward_points,
+                                'attempt_number': submission.attempt_number,
+                            },
+                        )
+                    )
+
+                    await self.student_activity_service.record_structure_completion(
+                        progress=progress,
+                        section=section,
+                        module=module,
+                        student_id=submission.student_id,
+                    )
+
+                    if progress_is_new:
+                        await self.uow.progress.add(progress)
+                    else:
+                        await self.uow.progress.update(progress)
             await self.uow.commit()
             return submission
