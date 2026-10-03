@@ -11,6 +11,7 @@ from app.application.interfaces.repositories.progress_repository import Progress
 from app.application.interfaces.repositories.question_attempt_repository import QuestionAttemptRepository
 from app.application.interfaces.repositories.question_repository import QuestionRepository
 from app.application.interfaces.repositories.section_repository import SectionRepository
+from app.application.interfaces.repositories.student_activity_repository import StudentActivityRepository
 from app.application.interfaces.repositories.task_attempt_repository import TaskAttemptRepository
 from app.application.interfaces.repositories.task_repository import TaskRepository
 from app.application.interfaces.repositories.test_case_repository import TestCaseRepository
@@ -32,6 +33,7 @@ __all__ = [
     "TestCaseRepository",
     "CodeSubmissionRepository",
     "CourseReviewRepository",
-    'LectureCommentRepository'
+    'LectureCommentRepository',
+    'StudentActivityRepository'
 ]
 

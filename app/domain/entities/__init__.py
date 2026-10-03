@@ -14,6 +14,7 @@ from app.domain.entities.section import Section
 from app.domain.entities.task import Task
 from app.domain.entities.test_case import TestCase
 from app.domain.entities.user import UserRole, User
+from app.domain.entities.student_activity import StudentActivity, StudentActivityType
 
 __all__ = [
     "Course",
@@ -36,5 +37,7 @@ __all__ = [
     "ExecutionStatus",
     "ExecutionResult",
     "CourseReview",
-    "LectureComment"
+    "LectureComment",
+    "StudentActivity",
+    "StudentActivityType"
 ]
