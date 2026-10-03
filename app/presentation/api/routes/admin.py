@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, Query
 from starlette import status
 
 from app.application.use_cases.courses.archive_course import ArchiveCourseUseCase, ArchiveCourseCommand
@@ -17,10 +17,14 @@ from app.application.use_cases.lectures.update_lecture import UpdateLectureComma
 from app.application.use_cases.modules.create_module import CreateModuleCommand, CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase, DeleteModuleCommand
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase, UpdateModuleCommand
+from app.application.use_cases.profile.get_admin_activities import (
+    GetAdminActivitiesQuery,
+    GetAdminActivitiesUseCase,
+)
 from app.application.use_cases.sections.create_section import CreateSectionUseCase, CreateSectionCommand
 from app.application.use_cases.sections.delete_section import DeleteSectionUseCase, DeleteSectionCommand
 from app.application.use_cases.sections.update_section import UpdateSectionCommand, UpdateSectionUseCase
-from app.domain.entities import User
+from app.domain.entities import StudentActivityType, User
 from app.presentation.api.dependencies import (
     get_update_module_use_case,
     get_create_module_use_case,
@@ -34,10 +38,11 @@ from app.presentation.api.dependencies import (
     get_delete_module_use_case,
     get_delete_section_use_case,
     get_delete_lecture_use_case, get_current_author_or_admin, get_publish_course_use_case, get_archive_course_use_case,
-    get_get_course_publication_readiness_use_case, get_course_image_upload_use_case
+    get_get_course_publication_readiness_use_case, get_course_image_upload_use_case,
+    get_current_user, get_get_admin_activities_use_case,
 )
 from app.presentation.api.schemas import ErrorResponse, CoursePublicationReadinessResponse, \
-    CoursePublicationErrorResponse
+    CoursePublicationErrorResponse, StudentActivityPageResponse
 from app.presentation.api.schemas.content.course import (
     CourseResponse,
     CreateCourseRequest,
@@ -558,3 +563,41 @@ async def get_course_publication_readiness(
         )
     )
     return CoursePublicationReadinessResponse.model_validate(result)
+
+
+@router.get(
+    '/activities',
+    response_model=StudentActivityPageResponse,
+    summary='Get platform activity history',
+    description=(
+        'Returns the activity history of all students on the platform: completed questions, '
+        'tasks, code tasks, sections and modules, as well as created and updated course reviews. '
+        'Available to administrators only. '
+    ),
+    responses={
+        403: {
+            'description': 'Only administrators can view platform activities.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_admin_activities(
+        limit: int = Query(default=20, ge=1, le=100),
+        offset: int = Query(default=0, ge=0),
+        student_id: UUID | None = Query(default=None),
+        course_id: UUID | None = Query(default=None),
+        activity_type: StudentActivityType | None = Query(default=None),
+        actor: User = Depends(get_current_user),
+        use_case: GetAdminActivitiesUseCase = Depends(get_get_admin_activities_use_case),
+) -> StudentActivityPageResponse:
+    result = await use_case.execute(
+        GetAdminActivitiesQuery(
+            actor=actor,
+            limit=limit,
+            offset=offset,
+            student_id=student_id,
+            course_id=course_id,
+            activity_type=activity_type,
+        )
+    )
+    return StudentActivityPageResponse.model_validate(result)
