@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities.student_activity import StudentActivity
+from app.domain.entities.student_activity import StudentActivity, StudentActivityType
 
 
 class StudentActivityRepository(ABC):
@@ -20,4 +20,24 @@ class StudentActivityRepository(ABC):
 
     @abstractmethod
     async def count_by_student_id(self, student_id: UUID) -> int:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def list_all(
+            self,
+            limit: int,
+            offset: int,
+            student_id: UUID | None = None,
+            course_id: UUID | None = None,
+            activity_type: StudentActivityType | None = None,
+    ) -> list[StudentActivity]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def count_all(
+            self,
+            student_id: UUID | None = None,
+            course_id: UUID | None = None,
+            activity_type: StudentActivityType | None = None,
+    ) -> int:
         raise NotImplementedError
