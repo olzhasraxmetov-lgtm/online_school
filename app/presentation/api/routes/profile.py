@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
+from app.application.use_cases.profile.get_my_activities import GetMyActivitiesUseCase, GetMyActivitiesQuery
 from app.application.use_cases.profile.get_my_course_analytics import GetMyCourseAnalyticsUseCase, \
     GetMyCourseAnalyticsQuery
 from app.application.use_cases.profile.get_my_profile import (
@@ -19,9 +20,10 @@ from app.presentation.api.dependencies import (
     get_current_user,
     get_get_my_profile_use_case,
     get_update_my_profile_use_case, get_get_my_course_analytics_use_case, get_get_my_teaching_course_analytics_use_case,
+    get_get_my_activities_use_case,
 )
 from app.presentation.api.schemas import ErrorResponse, UpdateMyProfileRequest, UserProfileResponse, \
-    AuthorCourseAnalyticsResponse
+    AuthorCourseAnalyticsResponse, StudentActivityPageResponse
 from app.presentation.api.schemas.student_analytics import StudentCourseAnalyticsResponse
 
 router = APIRouter(prefix='/profile', tags=['Profile'])
@@ -135,3 +137,39 @@ async def get_my_teaching_course_analytics(
         GetMyTeachingCourseAnalyticsQuery(actor=actor, course_id=course_id)
     )
     return AuthorCourseAnalyticsResponse.model_validate(result)
+
+@router.get(
+    '/me/activities',
+    response_model=StudentActivityPageResponse,
+    summary='Get my activity history',
+    description=(
+        'Returns the activity history of the current user across all courses: '
+        'completed questions, tasks, code tasks, sections and modules, '
+        'as well as created and updated course reviews. '
+        'Only the current user\'s own activities are returned; the student is taken '
+        'from the access token and cannot be passed in the request. '
+        'Items are ordered from newest to oldest and paginated with limit and offset; '
+        'total is the number of all activities of the user.'
+    ),
+    responses={
+        401: {
+            'description': 'Authentication credentials are missing or invalid.',
+            'model': ErrorResponse,
+        },
+    },
+)
+async def get_my_activities(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    actor: User = Depends(get_current_user),
+    use_case: GetMyActivitiesUseCase = Depends(
+        get_get_my_activities_use_case,
+    ),
+) -> StudentActivityPageResponse:
+    result = await use_case.execute(GetMyActivitiesQuery(
+        actor=actor,
+        limit=limit,
+        offset=offset,
+    ))
+
+    return StudentActivityPageResponse.model_validate(result)
