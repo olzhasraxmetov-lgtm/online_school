@@ -21,7 +21,6 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
             'title': 'FastAPI course',
             'description': 'Clean architecture in practice.',
             'short_description': 'Build a production-ready learning backend.',
-            'cover_image_url': 'https://example.com/fastapi-course-cover.png',
             'difficulty': 'intermediate',
             'tag_names': ['fastapi', 'backend', 'architecture'],
         },
@@ -76,7 +75,6 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
     assert len(courses_payload) == 1
     assert courses_payload[0]['title'] == 'FastAPI course'
     assert courses_payload[0]['short_description'] == 'Build a production-ready learning backend.'
-    assert courses_payload[0]['cover_image_url'] == 'https://example.com/fastapi-course-cover.png'
     assert courses_payload[0]['difficulty'] == 'intermediate'
     assert courses_payload[0]['tag_names'] == ['fastapi', 'backend', 'architecture']
     assert courses_payload[0]['counters']['module_count'] == 1
@@ -88,7 +86,6 @@ async def test_mvp_flow_from_login_to_public_read(client, seeded_admin_user):
     course_card_payload = course_card_response.json()
     assert course_card_payload['title'] == 'FastAPI course'
     assert course_card_payload['short_description'] == 'Build a production-ready learning backend.'
-    assert course_card_payload['cover_image_url'] == 'https://example.com/fastapi-course-cover.png'
     assert course_card_payload['difficulty'] == 'intermediate'
     assert course_card_payload['tag_names'] == ['fastapi', 'backend', 'architecture']
     assert course_card_payload['counters']['module_count'] == 1

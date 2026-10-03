@@ -12,7 +12,6 @@ async def test_create_course_accepts_metadata(
             'title': 'FastAPI Advanced',
             'description': 'Detailed course description.',
             'short_description': 'Build production-grade APIs.',
-            'cover_image_url': 'https://example.com/course-cover.png',
             'difficulty': 'advanced',
             'tag_names': ['FastAPI', 'python', 'backend'],
         },
@@ -21,7 +20,6 @@ async def test_create_course_accepts_metadata(
     assert response.status_code == 201
     payload = response.json()
     assert payload['short_description'] == 'Build production-grade APIs.'
-    assert payload['cover_image_url'] == 'https://example.com/course-cover.png'
     assert payload['difficulty'] == 'advanced'
 
 @pytest.mark.asyncio
@@ -46,7 +44,6 @@ async def test_update_course_changes_metadata(
             'title': 'Metadata course',
             'description': 'Updated description.',
             'short_description': 'Short preview.',
-            'cover_image_url': 'https://example.com/new-cover.png',
             'difficulty': 'intermediate',
             'tag_names': ['Backend', 'FastAPI', 'backend'],
         },
@@ -55,6 +52,5 @@ async def test_update_course_changes_metadata(
     assert update_response.status_code == 200
     payload = update_response.json()
     assert payload['short_description'] == 'Short preview.'
-    assert payload['cover_image_url'] == 'https://example.com/new-cover.png'
     assert payload['difficulty'] == 'intermediate'
     assert payload['tag_names'] == ['backend', 'fastapi']
