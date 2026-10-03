@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, JSON
+from sqlalchemy import String, ForeignKey, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
@@ -11,7 +11,13 @@ if TYPE_CHECKING:
 
 class CourseModel(Base):
     __tablename__ = 'courses'
-
+    __table_args__ = (
+        Index(
+            'ix_courses_status_difficulty',
+            'status',
+            'difficulty',
+        ),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     author_id: Mapped[str] = mapped_column(
         ForeignKey('users.id', ondelete='CASCADE'),

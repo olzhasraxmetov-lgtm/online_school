@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String
+from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String, Index
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,6 +12,20 @@ if TYPE_CHECKING:
 
 class QuestionAttemptModel(Base):
     __tablename__ = 'question_attempts'
+    __table_args__ = (
+        Index(
+            'ix_question_attempts_student_question_number',
+            'student_id',
+            'question_id',
+            'attempt_number',
+        ),
+        Index(
+            'ix_question_attempts_question_student_number',
+            'question_id',
+            'student_id',
+            'attempt_number',
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     question_id: Mapped[str] = mapped_column(ForeignKey('questions.id', ondelete='CASCADE'))

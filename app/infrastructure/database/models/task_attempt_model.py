@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
@@ -11,6 +11,19 @@ if TYPE_CHECKING:
 
 class TaskAttemptModel(Base):
     __tablename__ = 'task_attempts'
+    __table_args__ = (
+        Index(
+            'ix_task_attempts_student_task_number',
+            'student_id',
+            'task_id',
+            'attempt_number',
+        ),
+        Index(
+            'ix_task_attempts_task_number',
+            'task_id',
+            'attempt_number',
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     task_id: Mapped[str] = mapped_column(ForeignKey('tasks.id', ondelete='CASCADE'))

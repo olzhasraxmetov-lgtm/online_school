@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String, Text, JSON
+from sqlalchemy import ForeignKey, Integer, String, Text, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
@@ -10,6 +10,13 @@ if TYPE_CHECKING:
 
 class TaskModel(Base):
     __tablename__ = 'tasks'
+    __table_args__ = (
+        Index(
+            'ix_tasks_section_position',
+            'section_id',
+            'position',
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     section_id: Mapped[str] = mapped_column(ForeignKey('sections.id', ondelete='CASCADE'))

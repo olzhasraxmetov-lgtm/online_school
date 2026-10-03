@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, String, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.models.base import Base
@@ -11,6 +11,13 @@ if TYPE_CHECKING:
 
 class ModuleModel(Base):
     __tablename__ = "modules"
+    __table_args__ = (
+        Index(
+            'ix_modules_course_position',
+            'course_id',
+            'position',
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     course_id: Mapped[str] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"))
