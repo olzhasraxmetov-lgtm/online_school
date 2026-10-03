@@ -1,6 +1,5 @@
 from collections.abc import AsyncIterator
 
-from app.application.use_cases.profile.get_admin_activities import GetAdminActivitiesUseCase
 from fastapi import Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -8,7 +7,6 @@ from app.application.interfaces.services.password_hasher import PasswordHasher
 from app.application.interfaces.services.token_service import TokenService
 from app.application.services.course_catalog_read_service import CourseCatalogReadService
 from app.application.services.course_content_access_service import CourseContentAccessService
-from app.application.services.course_rating_read_service import CourseRatingReadService
 from app.application.use_cases.answer_options.create_answer_option import CreateAnswerOptionUseCase
 from app.application.use_cases.answer_options.delete_answer_option import DeleteAnswerOptionUseCase
 from app.application.use_cases.answer_options.update_answer_option import UpdateAnswerOptionUseCase
@@ -42,6 +40,7 @@ from app.application.use_cases.lectures.update_lecture import UpdateLectureUseCa
 from app.application.use_cases.modules.create_module import CreateModuleUseCase
 from app.application.use_cases.modules.delete_module import DeleteModuleUseCase
 from app.application.use_cases.modules.update_module import UpdateModuleUseCase
+from app.application.use_cases.profile.get_admin_activities import GetAdminActivitiesUseCase
 from app.application.use_cases.profile.get_my_activities import GetMyActivitiesUseCase
 from app.application.use_cases.profile.get_my_course_analytics import GetMyCourseAnalyticsUseCase
 from app.application.use_cases.profile.get_my_profile import GetMyProfileUseCase
@@ -89,13 +88,7 @@ def get_get_courses_use_case(
         catalog_read_service=CourseCatalogReadService(
             module_repository=uow.modules,
             section_repository=uow.sections,
-            lecture_repository=uow.lectures,
-            question_repository=uow.questions,
-            task_repository=uow.tasks,
-            code_task_repository=uow.code_tasks,
-            rating_read_service=CourseRatingReadService(
-                review_repository=uow.course_reviews,
-            )
+            metrics_repository=uow.course_catalog_metrics
         ),
     )
 
@@ -112,11 +105,7 @@ def get_get_course_use_case(
         catalog_read_service=CourseCatalogReadService(
             module_repository=uow.modules,
             section_repository=uow.sections,
-            lecture_repository=uow.lectures,
-            question_repository=uow.questions,
-            task_repository=uow.tasks,
-            code_task_repository=uow.code_tasks,
-            rating_read_service=CourseRatingReadService(review_repository=uow.course_reviews),
+            metrics_repository=uow.course_catalog_metrics,
         ),
     )
 
