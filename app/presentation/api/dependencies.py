@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from app.application.use_cases.profile.get_admin_activities import GetAdminActivitiesUseCase
 from fastapi import Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -343,6 +344,11 @@ def get_get_my_activities_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
 ) -> GetMyActivitiesUseCase:
     return GetMyActivitiesUseCase(uow=uow)
+
+def get_get_admin_activities_use_case(
+        uow: SqlAlchemyUnitOfWork = Depends(get_uow),
+) -> GetAdminActivitiesUseCase:
+    return GetAdminActivitiesUseCase(uow=uow)
 
 def get_update_lecture_comment_use_case(
         uow: SqlAlchemyUnitOfWork = Depends(get_uow),
